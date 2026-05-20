@@ -1,0 +1,74 @@
+name: Code Analysys
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  CodeAnalysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Python env
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Scan dependencies with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: '.'
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          
+      # - name: SonarCloud Analysis
+      #   uses: SonarSource/sonarcloud-github-action@v2
+      #   with:
+      #     projectBaseDir: .
+      #     args: >
+      #       -Dsonar.verbose=true
+      #       -Dsonar.coverage.exclusions=**
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  SecurityAnalysis:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get Changed File
+        id: changed-files
+        uses: tj-actions/changed-files@2f7c5bfce28377bc069a65ba478de0a74aa0ca32 
+        with:
+          separator: ','
+      - name: Vorpal with review Dog
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' }} 
+        uses: checkmarx/vorpal-reviewdog-github-action@4ef7b4fb09e7fd759365122fc0be02694e455e7a
+        with:
+          source_path: "${{ steps.changed-files.outputs.all_changed_files }}"
+          filter_mode: file
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-check
+          level: error
+          fail_on_error: false
