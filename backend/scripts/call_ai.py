@@ -7,7 +7,8 @@ load_dotenv()
 def load_system_prompt():
     import os
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    prompt_path = os.path.join(current_dir, "docs/systemPrompt.md")
+    # The docs folder is in the parent directory of scripts/
+    prompt_path = os.path.join(os.path.dirname(current_dir), "docs/systemPrompt.md")
     
     try:
         print(f"Chargement du prompt: {prompt_path}")
