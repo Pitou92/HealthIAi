@@ -1,0 +1,14 @@
+{
+  "goal": "",
+  "age": 0,
+  "sex": "",
+  "height_cm": 0,
+  "weight_kg": 0,
+  "fitness_level": "",
+  "workouts_per_week": 0,
+  "session_duration_min": 0,
+  "equipment": [],
+  "diet": "",
+  "injuries": [],
+  "daily_activity": ""
+}
