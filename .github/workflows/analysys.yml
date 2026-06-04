@@ -59,9 +59,10 @@ jobs:
           fetch-depth: 0
       - name: Get Changed File
         id: changed-files
-        uses: tj-actions/changed-files@2f7c5bfce28377bc069a65ba478de0a74aa0ca32 
+        uses: tj-actions/changed-files@2f7c5bfce28377bc069a65ba478de0a74aa0ca32
         with:
           separator: ','
+          files: 'BackEnd/**'
       - name: Vorpal with review Dog
         if: ${{ steps.changed-files.outputs.any_changed == 'true' }} 
         uses: checkmarx/vorpal-reviewdog-github-action@4ef7b4fb09e7fd759365122fc0be02694e455e7a
