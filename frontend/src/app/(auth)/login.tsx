@@ -1,19 +1,36 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Routes } from '@/navigation/routes';
+import { login } from '@/services/api';
+import { saveToken } from '@/services/token';
 import { Spacing } from '@/constants/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleLogin() {
-    // TODO Sprint 4 : appel API + stockage token
-    router.replace(Routes.Dashboard);
+  async function handleLogin() {
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs.');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const { token } = await login(email, password);
+      await saveToken(token);
+      router.replace(Routes.Dashboard);
+    } catch {
+      setError('Email ou mot de passe incorrect.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -44,8 +61,15 @@ export default function LoginScreen() {
             onChangeText={setPassword}
           />
 
-          <TouchableOpacity style={styles.primaryBtn} onPress={handleLogin}>
-            <Text style={styles.primaryBtnText}>Se connecter</Text>
+          {error && <Text style={styles.error}>{error}</Text>}
+
+          <TouchableOpacity
+            style={[styles.primaryBtn, loading && styles.btnDisabled]}
+            onPress={handleLogin}
+            disabled={loading}>
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.primaryBtnText}>Se connecter</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push(Routes.Register)}>
@@ -72,6 +96,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+  error: { fontSize: 14, color: '#FF3B30', textAlign: 'center' },
   primaryBtn: {
     backgroundColor: '#208AEF',
     borderRadius: 14,
@@ -79,6 +104,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.two,
   },
+  btnDisabled: { opacity: 0.6 },
   primaryBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
   linkText: { fontSize: 15, color: '#208AEF', textAlign: 'center', marginTop: Spacing.two },
 });

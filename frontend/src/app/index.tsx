@@ -1,8 +1,23 @@
-import { Redirect } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { View } from 'react-native';
 
 import { Routes } from '@/navigation/routes';
+import { getToken } from '@/services/token';
 
 export default function Index() {
-  // TODO Sprint 4 : vérifier le token AsyncStorage → rediriger vers Dashboard si connecté
-  return <Redirect href={Routes.Welcome} />;
+  const router = useRouter();
+
+  useEffect(() => {
+    getToken().then((token) => {
+      if (token) {
+        router.replace(Routes.Dashboard);
+      } else {
+        router.replace(Routes.Welcome);
+      }
+    });
+  }, []);
+
+  // Fond bleu pendant la vérification du token (seamless avec le splash)
+  return <View style={{ flex: 1, backgroundColor: '#208AEF' }} />;
 }
