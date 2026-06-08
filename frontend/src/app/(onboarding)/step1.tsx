@@ -4,29 +4,44 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Routes } from '@/navigation/routes';
+import { useOnboardingStore } from '@/store/onboarding';
 import { Spacing } from '@/constants/theme';
+import type { Sex } from '@/types/user';
 
-type Sex = 'male' | 'female' | 'other';
+const SEX_OPTIONS: { label: string; value: Sex }[] = [
+  { label: 'Homme', value: 'male' },
+  { label: 'Femme', value: 'female' },
+  { label: 'Autre', value: 'other' },
+];
 
 export default function OnboardingStep1() {
   const router = useRouter();
+  const setStep1 = useOnboardingStore((s) => s.setStep1);
+
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [sex, setSex] = useState<Sex | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const sexOptions: { label: string; value: Sex }[] = [
-    { label: 'Homme', value: 'male' },
-    { label: 'Femme', value: 'female' },
-    { label: 'Autre', value: 'other' },
-  ];
+  const parsedAge = parseInt(age, 10);
+  const parsedHeight = parseInt(height, 10);
+  const parsedWeight = parseFloat(weight);
+
+  const isValid =
+    sex !== null &&
+    age !== '' && !isNaN(parsedAge) && parsedAge > 0 && parsedAge < 130 &&
+    height !== '' && !isNaN(parsedHeight) && parsedHeight > 50 && parsedHeight < 280 &&
+    weight !== '' && !isNaN(parsedWeight) && parsedWeight > 10 && parsedWeight < 500;
 
   function handleNext() {
-    // TODO Sprint 5 : stocker dans le store global
+    if (!isValid) {
+      setError('Veuillez renseigner des valeurs valides.');
+      return;
+    }
+    setStep1({ age: parsedAge, height: parsedHeight, weight: parsedWeight, sex: sex! });
     router.push(Routes.OnboardingStep2);
   }
-
-  const canContinue = age && height && weight && sex;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -50,7 +65,7 @@ export default function OnboardingStep1() {
                 placeholderTextColor="#999"
                 keyboardType="numeric"
                 value={age}
-                onChangeText={setAge}
+                onChangeText={(v) => { setAge(v); setError(null); }}
               />
             </View>
             <View style={styles.halfField}>
@@ -61,7 +76,7 @@ export default function OnboardingStep1() {
                 placeholderTextColor="#999"
                 keyboardType="numeric"
                 value={height}
-                onChangeText={setHeight}
+                onChangeText={(v) => { setHeight(v); setError(null); }}
               />
             </View>
           </View>
@@ -72,20 +87,20 @@ export default function OnboardingStep1() {
               style={styles.input}
               placeholder="70"
               placeholderTextColor="#999"
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               value={weight}
-              onChangeText={setWeight}
+              onChangeText={(v) => { setWeight(v); setError(null); }}
             />
           </View>
 
           <View>
             <Text style={styles.label}>Sexe</Text>
             <View style={styles.chips}>
-              {sexOptions.map((opt) => (
+              {SEX_OPTIONS.map((opt) => (
                 <TouchableOpacity
                   key={opt.value}
                   style={[styles.chip, sex === opt.value && styles.chipActive]}
-                  onPress={() => setSex(opt.value)}>
+                  onPress={() => { setSex(opt.value); setError(null); }}>
                   <Text style={[styles.chipText, sex === opt.value && styles.chipTextActive]}>
                     {opt.label}
                   </Text>
@@ -93,13 +108,14 @@ export default function OnboardingStep1() {
               ))}
             </View>
           </View>
+
+          {error && <Text style={styles.error}>{error}</Text>}
         </View>
       </View>
 
       <TouchableOpacity
-        style={[styles.nextBtn, !canContinue && styles.nextBtnDisabled]}
-        onPress={handleNext}
-        disabled={!canContinue}>
+        style={[styles.nextBtn, !isValid && styles.nextBtnDisabled]}
+        onPress={handleNext}>
         <Text style={styles.nextBtnText}>Suivant →</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -114,12 +130,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
   },
   progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.four },
-  dot: {
-    height: 6,
-    flex: 1,
-    borderRadius: 3,
-    backgroundColor: '#E0E0E0',
-  },
+  dot: { height: 6, flex: 1, borderRadius: 3, backgroundColor: '#E0E0E0' },
   dotActive: { backgroundColor: '#208AEF' },
   content: { flex: 1, gap: Spacing.three },
   title: { fontSize: 28, fontWeight: '800', color: '#000' },
@@ -138,16 +149,11 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   chips: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
-  chip: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: '#F0F0F3',
-  },
+  chip: { flex: 1, borderRadius: 12, paddingVertical: 14, alignItems: 'center', backgroundColor: '#F0F0F3' },
   chipActive: { backgroundColor: '#208AEF' },
   chipText: { fontSize: 15, fontWeight: '600', color: '#555' },
   chipTextActive: { color: '#fff' },
+  error: { fontSize: 14, color: '#FF3B30', textAlign: 'center' },
   nextBtn: {
     backgroundColor: '#208AEF',
     borderRadius: 14,
