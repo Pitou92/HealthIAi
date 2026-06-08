@@ -1,19 +1,40 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Routes } from '@/navigation/routes';
+import { register } from '@/services/api';
+import { saveToken } from '@/services/token';
 import { Spacing } from '@/constants/theme';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleRegister() {
-    // TODO Sprint 4 : appel API + stockage token
-    router.push(Routes.OnboardingStep1);
+  async function handleRegister() {
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères.');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const { token } = await register(email, password);
+      await saveToken(token);
+      router.push(Routes.OnboardingStep1);
+    } catch {
+      setError('Une erreur est survenue. Réessayez.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -37,15 +58,22 @@ export default function RegisterScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Mot de passe"
+            placeholder="Mot de passe (min. 6 caractères)"
             placeholderTextColor="#999"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
 
-          <TouchableOpacity style={styles.primaryBtn} onPress={handleRegister}>
-            <Text style={styles.primaryBtnText}>S'inscrire</Text>
+          {error && <Text style={styles.error}>{error}</Text>}
+
+          <TouchableOpacity
+            style={[styles.primaryBtn, loading && styles.btnDisabled]}
+            onPress={handleRegister}
+            disabled={loading}>
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.primaryBtnText}>S'inscrire</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push(Routes.Login)}>
@@ -72,6 +100,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+  error: { fontSize: 14, color: '#FF3B30', textAlign: 'center' },
   primaryBtn: {
     backgroundColor: '#208AEF',
     borderRadius: 14,
@@ -79,6 +108,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.two,
   },
+  btnDisabled: { opacity: 0.6 },
   primaryBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
   linkText: { fontSize: 15, color: '#208AEF', textAlign: 'center', marginTop: Spacing.two },
 });
