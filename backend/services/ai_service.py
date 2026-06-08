@@ -47,3 +47,15 @@ class AIService:
         except Exception as e:
             print(f"AI Service Error: {e}")
             raise e
+
+    async def generate_smart_recommendations(self, user_profile_json: str, meal_analysis: MealAnalysis) -> RecommendationPlan:
+        """
+        Generates an adaptive plan by combining user profile and a meal analysis.
+        """
+        combined_input = {
+            "user_profile": json.loads(user_profile_json),
+            "current_meal": meal_analysis.model_dump()
+        }
+
+        # On utilise la même logique d'appel que generate_recommendations
+        return await self.generate_recommendations(json.dumps(combined_input))
