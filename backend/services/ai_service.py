@@ -1,35 +1,22 @@
-import os
 import json
-import sys
-from pathlib import Path
 from openai import OpenAI
-from dotenv import load_dotenv
-
-# Add parent directory to sys.path to allow importing from models
-sys.path.append(str(Path(__file__).parent.parent))
-from models import RecommendationPlan
-
-load_dotenv()
+from core.config import settings
+from models.domain import RecommendationPlan
 
 class AIService:
     def __init__(self):
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=os.getenv('OPENROUTER_KEY'),
+            api_key=settings.OPENROUTER_KEY,
         )
         self.system_prompt = self._load_system_prompt()
 
     def _load_system_prompt(self):
-        # Path relative to this file: backend/services/ai_service.py -> backend/docs/systemPrompt.md
-        import os
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        prompt_path = os.path.join(os.path.dirname(current_dir), "..", "docs", "systemPrompt.md")
-
         try:
-            with open(prompt_path, "r", encoding="utf-8") as f:
+            with open(settings.SYSTEM_PROMPT_PATH, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError:
-            print(f"Critical Error: systemPrompt.md not found at {prompt_path}")
+            print(f"Critical Error: system_prompt.md not found at {settings.SYSTEM_PROMPT_PATH}")
             return ""
 
     async def generate_recommendations(self, user_profile_json: str) -> RecommendationPlan:
@@ -39,7 +26,7 @@ class AIService:
         """
         try:
             response = self.client.chat.completions.create(
-                model="openai/gpt-oss-120b:free",
+                model=settings.AI_MODEL,
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_profile_json}
