@@ -2,6 +2,7 @@ import os
 import base64
 from openai import OpenAI
 from core.config import settings
+from core.utils import clean_json_response
 from models.domain import MealAnalysis
 
 class VisionService:
@@ -12,6 +13,15 @@ class VisionService:
         )
         self.primary_model = "google/gemma-3-27b-it" # Modèle top 1
         self.fallback_model = "qwen/qwen2.5-vl-72b-instruct" # Modèle top 2
+        self.vision_prompt = self._load_vision_prompt()
+    
+    def _load_vision_prompt(self):
+        try:
+            with open(settings.VISION_PROMPT, "r", encoding="utf-8") as f:
+                return f.read()
+        except FileNotFoundError:
+            print(f"Critical Error: Vision prompt not found at {settings.VISION_PROMPT}")
+            return "Analyze this meal image and return nutritional data in JSON."
 
     def _encode_image(self, image_bytes):
         return base64.b64encode(image_bytes).decode('utf-8')
@@ -19,13 +29,7 @@ class VisionService:
     async def analyze_meal_image(self, image_bytes) -> MealAnalysis:
         base64_image = self._encode_image(image_bytes)
 
-        prompt = (
-            "Analyze this meal image. Identify all foods, estimate quantities, "
-            "and provide nutritional values (calories, protein, carbs, fat). "
-            "Return ONLY a valid JSON matching this schema: "
-            "{\"detected_foods\": [{\"name\": \"\", \"estimated_quantity\": \"\", \"calories\": 0, \"protein_g\": 0, \"carbs_g\": 0, \"fat_g\": 0}], "
-            "\"total_calories\": 0, \"total_protein\": 0, \"total_carbs\": 0, \"total_fat\": 0, \"analysis_summary\": \"\"}"
-        )
+        prompt = self.vision_prompt
 
         models_to_try = [self.primary_model, self.fallback_model]
 
@@ -48,10 +52,7 @@ class VisionService:
                 )
                 content = response.choices[0].message.content
                 # Nettoyage rapide du markdown JSON si présent
-                if "```json" in content:
-                    content = content.split("```json")[1].split("```")[0].strip()
-                elif "```" in content:
-                    content = content.split("```")[1].split("```")[0].strip()
+                content = clean_json_response(content)
 
                 return MealAnalysis.model_validate_json(content)
             except Exception as e:

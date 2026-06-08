@@ -1,6 +1,7 @@
 import json
 from openai import OpenAI
 from core.config import settings
+from core.utils import clean_json_response
 from models.domain import RecommendationPlan
 
 class AIService:
@@ -36,10 +37,7 @@ class AIService:
             content = response.choices[0].message.content
 
             # Remove potential markdown fences if the AI ignored the system prompt
-            if content.startswith("```json"):
-                content = content.replace("```json", "", 1).replace("```", "", 1).strip()
-            elif content.startswith("```"):
-                content = content.replace("```", "", 2).strip()
+            content = clean_json_response(content)
 
             # Validate with Pydantic
             return RecommendationPlan.model_validate_json(content)
