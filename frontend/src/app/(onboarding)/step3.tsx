@@ -1,11 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Routes } from '@/navigation/routes';
+import { useOnboardingStore } from '@/store/onboarding';
+import { postOnboarding } from '@/services/api';
 import { Spacing } from '@/constants/theme';
-import type { ActivityLevel, ActivityType } from '@/types/user';
+import type { ActivityLevel, ActivityType, UserProfile } from '@/types/user';
 
 const FREQUENCIES = [1, 2, 3, 4, 5, 6, 7];
 
@@ -25,16 +27,41 @@ const LEVELS: { label: string; value: ActivityLevel }[] = [
 
 export default function OnboardingStep3() {
   const router = useRouter();
+  const { data, setStep3, reset } = useOnboardingStore();
+
   const [frequency, setFrequency] = useState<number | null>(null);
   const [activityType, setActivityType] = useState<ActivityType | null>(null);
   const [level, setLevel] = useState<ActivityLevel | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleFinish() {
-    // TODO Sprint 5 : envoyer les données onboarding au back
-    router.replace(Routes.Dashboard);
+  const canFinish = frequency !== null && activityType !== null && level !== null;
+
+  async function handleFinish() {
+    if (!canFinish) return;
+    setStep3({ activityFrequency: frequency, activityType, activityLevel: level });
+
+    const onboardingData: UserProfile = {
+      age: data.age!,
+      height: data.height!,
+      weight: data.weight!,
+      sex: data.sex!,
+      goal: data.goal!,
+      activityFrequency: frequency,
+      activityType,
+      activityLevel: level,
+    };
+
+    setLoading(true);
+    try {
+      await postOnboarding(onboardingData);
+      reset();
+      router.replace(Routes.Dashboard);
+    } catch {
+      router.replace(Routes.Dashboard);
+    } finally {
+      setLoading(false);
+    }
   }
-
-  const canFinish = frequency !== null && activityType && level;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,8 +99,7 @@ export default function OnboardingStep3() {
                 key={t.value}
                 style={[styles.gridItem, activityType === t.value && styles.gridItemActive]}
                 onPress={() => setActivityType(t.value)}>
-                <Text
-                  style={[styles.gridText, activityType === t.value && styles.gridTextActive]}>
+                <Text style={[styles.gridText, activityType === t.value && styles.gridTextActive]}>
                   {t.label}
                 </Text>
               </TouchableOpacity>
@@ -101,8 +127,10 @@ export default function OnboardingStep3() {
       <TouchableOpacity
         style={[styles.nextBtn, !canFinish && styles.nextBtnDisabled]}
         onPress={handleFinish}
-        disabled={!canFinish}>
-        <Text style={styles.nextBtnText}>Voir mes recommandations IA</Text>
+        disabled={!canFinish || loading}>
+        {loading
+          ? <ActivityIndicator color="#fff" />
+          : <Text style={styles.nextBtnText}>Voir mes recommandations IA</Text>}
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -125,12 +153,7 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.two },
   label: { fontSize: 15, fontWeight: '600', color: '#333' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
-  chip: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#F0F0F3',
-  },
+  chip: { paddingHorizontal: Spacing.three, paddingVertical: 10, borderRadius: 10, backgroundColor: '#F0F0F3' },
   chipActive: { backgroundColor: '#208AEF' },
   chipText: { fontSize: 14, fontWeight: '600', color: '#555' },
   chipTextActive: { color: '#fff' },

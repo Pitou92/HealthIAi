@@ -4,6 +4,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Routes } from '@/navigation/routes';
+import { useOnboardingStore } from '@/store/onboarding';
 import { Spacing } from '@/constants/theme';
 import type { Goal } from '@/types/user';
 
@@ -15,10 +16,12 @@ const GOALS: { label: string; description: string; value: Goal }[] = [
 
 export default function OnboardingStep2() {
   const router = useRouter();
+  const setStep2 = useOnboardingStore((s) => s.setStep2);
   const [goal, setGoal] = useState<Goal | null>(null);
 
   function handleNext() {
-    // TODO Sprint 5 : stocker dans le store global
+    if (!goal) return;
+    setStep2({ goal });
     router.push(Routes.OnboardingStep3);
   }
 
