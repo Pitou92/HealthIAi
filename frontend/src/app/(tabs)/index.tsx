@@ -22,10 +22,10 @@ function formatDate() {
 }
 
 export default function DashboardScreen() {
-  const { loading, recommendations: data, fetchRecommendations } = useAppStore();
+  const { loading, recommendations: data, loadRecommendations } = useAppStore();
 
   useEffect(() => {
-    if (!data) fetchRecommendations();
+    if (!data) loadRecommendations();
   }, []);
 
   const caloriePct = data ? Math.min(data.calories.consumed / data.calories.target, 1) : 0;

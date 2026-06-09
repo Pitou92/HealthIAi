@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AnimatedBackground } from '@/components/animated-background';
 import { SP, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
-import { postOnboarding } from '@/services/api';
+import { useAppStore } from '@/store/app';
 import { useOnboardingStore } from '@/store/onboarding';
 import type { ActivityLevel, ActivityType, UserProfile } from '@/types/user';
 
@@ -28,33 +28,37 @@ const LEVELS: { label: string; value: ActivityLevel }[] = [
 
 export default function OnboardingStep3() {
   const router = useRouter();
-  const { data, setStep3, reset } = useOnboardingStore();
+  const { data, setStep3, reset: resetOnboarding } = useOnboardingStore();
+  const { loading, error, submitAndFetch, clearError } = useAppStore();
 
   const [frequency, setFrequency] = useState<number | null>(null);
   const [activityType, setActivityType] = useState<ActivityType | null>(null);
   const [level, setLevel] = useState<ActivityLevel | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const canFinish = frequency !== null && activityType !== null && level !== null;
 
   async function handleFinish() {
-    if (!canFinish) return;
+    if (!canFinish || loading) return;
+
     setStep3({ activityFrequency: frequency, activityType, activityLevel: level });
 
-    const onboardingData: UserProfile = {
-      age: data.age!, height: data.height!, weight: data.weight!, sex: data.sex!,
-      goal: data.goal!, activityFrequency: frequency, activityType, activityLevel: level,
+    const profile: UserProfile = {
+      age: data.age!,
+      height: data.height!,
+      weight: data.weight!,
+      sex: data.sex!,
+      goal: data.goal!,
+      activityFrequency: frequency,
+      activityType,
+      activityLevel: level,
     };
 
-    setLoading(true);
     try {
-      await postOnboarding(onboardingData);
-      reset();
+      await submitAndFetch(profile);
+      resetOnboarding();
       router.replace(Routes.Dashboard);
     } catch {
-      router.replace(Routes.Dashboard);
-    } finally {
-      setLoading(false);
+      // error is set in store, displayed below
     }
   }
 
@@ -119,14 +123,28 @@ export default function OnboardingStep3() {
             ))}
           </View>
         </View>
+
+        {error && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={clearError}>
+              <Text style={styles.retryText}>Réessayer</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <TouchableOpacity
-        style={[styles.nextBtn, !canFinish && styles.nextBtnDisabled]}
+        style={[styles.nextBtn, (!canFinish || loading) && styles.nextBtnDisabled]}
         onPress={handleFinish}
         disabled={!canFinish || loading}>
         {loading
-          ? <ActivityIndicator color="#fff" />
+          ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator color="#fff" size="small" />
+              <Text style={styles.nextBtnText}>Génération en cours...</Text>
+            </View>
+          )
           : <Text style={styles.nextBtnText}>Voir mes recommandations IA ✨</Text>}
       </TouchableOpacity>
     </SafeAreaView>
@@ -182,6 +200,19 @@ const styles = StyleSheet.create({
   gridText: { fontSize: 14, fontWeight: '600', color: SP.textDim },
   gridTextActive: { color: SP.primary },
 
+  errorBox: {
+    backgroundColor: 'rgba(248, 113, 113, 0.1)',
+    borderRadius: 12,
+    padding: Spacing.three,
+    borderWidth: 1,
+    borderColor: 'rgba(248, 113, 113, 0.3)',
+    alignItems: 'center',
+    gap: Spacing.one,
+  },
+  errorText: { fontSize: 14, color: '#F87171', textAlign: 'center' },
+  retryText: { fontSize: 13, fontWeight: '700', color: SP.primary },
+
+  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   nextBtn: {
     backgroundColor: SP.primary,
     borderRadius: 16,

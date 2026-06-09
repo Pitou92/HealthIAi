@@ -1,52 +1,79 @@
-import type { UserProfile } from '@/types/user';
+import type { Recommendations } from '@/mocks/recommendations';
 import { mockRecommendations } from '@/mocks/recommendations';
-
-const BASE_URL = 'http://localhost:8000';
-const USE_MOCK = true;
-const MOCK_DELAY_MS = 2800;
+import { API_BASE_URL, MOCK_RECO_DELAY_MS, MOCK_SUBMIT_DELAY_MS, USE_MOCK } from '@/config/api';
+import { getToken } from '@/services/token';
+import type { UserProfile } from '@/types/user';
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
-export async function postOnboarding(data: UserProfile): Promise<void> {
-  if (USE_MOCK) return;
-  const res = await fetch(`${BASE_URL}/onboarding`, {
+async function bearer(): Promise<Record<string, string>> {
+  const token = await getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// ─── Onboarding ──────────────────────────────────────────────────────────────
+
+export async function submitOnboardingData(data: UserProfile): Promise<void> {
+  if (USE_MOCK) {
+    await delay(MOCK_SUBMIT_DELAY_MS);
+    return;
+  }
+  const res = await fetch(`${API_BASE_URL}/onboarding`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await bearer()) },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Onboarding failed');
+  if (!res.ok) throw new Error(`Onboarding échoué (${res.status})`);
 }
 
-export async function getRecommendations(): Promise<typeof mockRecommendations> {
+// ─── Recommendations ─────────────────────────────────────────────────────────
+
+// Pass profile to use the AI pipeline (POST), omit for a cached GET
+export async function fetchRecommendations(profile?: UserProfile): Promise<Recommendations> {
   if (USE_MOCK) {
-    await delay(MOCK_DELAY_MS);
+    await delay(MOCK_RECO_DELAY_MS);
     return mockRecommendations;
   }
-  const res = await fetch(`${BASE_URL}/recommendations`);
-  if (!res.ok) throw new Error('Failed to fetch recommendations');
-  return res.json();
+  const auth = await bearer();
+  const res = profile
+    ? await fetch(`${API_BASE_URL}/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...auth },
+        body: JSON.stringify(profile),
+      })
+    : await fetch(`${API_BASE_URL}/recommendations`, { headers: auth });
+  if (!res.ok) throw new Error(`Recommandations indisponibles (${res.status})`);
+  return res.json() as Promise<Recommendations>;
 }
 
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
 export async function login(email: string, password: string): Promise<{ token: string }> {
-  if (USE_MOCK) return { token: 'mock-token-123' };
-  const res = await fetch(`${BASE_URL}/auth/login`, {
+  if (USE_MOCK) {
+    await delay(400);
+    return { token: 'mock-token-123' };
+  }
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
-  if (!res.ok) throw new Error('Login failed');
+  if (!res.ok) throw new Error('Email ou mot de passe incorrect.');
   return res.json();
 }
 
 export async function register(email: string, password: string): Promise<{ token: string }> {
-  if (USE_MOCK) return { token: 'mock-token-123' };
-  const res = await fetch(`${BASE_URL}/auth/register`, {
+  if (USE_MOCK) {
+    await delay(400);
+    return { token: 'mock-token-123' };
+  }
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
-  if (!res.ok) throw new Error('Register failed');
+  if (!res.ok) throw new Error('Création de compte échouée.');
   return res.json();
 }

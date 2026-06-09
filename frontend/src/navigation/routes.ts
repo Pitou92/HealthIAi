@@ -5,7 +5,7 @@ export const Routes = {
   OnboardingStep1: '/(onboarding)/step1',
   OnboardingStep2: '/(onboarding)/step2',
   OnboardingStep3: '/(onboarding)/step3',
-  Dashboard: '/(tabs)/',
+  Dashboard: '/(tabs)',
   Explore: '/(tabs)/explore',
 } as const;
 
