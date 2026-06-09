@@ -6,9 +6,9 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 export default function RootLayout() {
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <AnimatedSplashOverlay />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#050c0a' } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFAF5' } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />

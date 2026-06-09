@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DF, Spacing } from '@/constants/theme';
+import { AnimatedBackground } from '@/components/animated-background';
+import { OW, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { postOnboarding } from '@/services/api';
 import { useOnboardingStore } from '@/store/onboarding';
@@ -18,11 +19,11 @@ const ACTIVITY_TYPES: { label: string; value: ActivityType }[] = [
   { label: 'Yoga', value: 'yoga' },
 ];
 
-const LEVELS: { label: string; value: ActivityLevel; accent: string }[] = [
-  { label: 'Débutant', value: 'sedentary', accent: DF.cyan },
-  { label: 'Intermédiaire', value: 'light', accent: DF.mint },
-  { label: 'Avancé', value: 'moderate', accent: DF.violet },
-  { label: 'Expert', value: 'intense', accent: DF.pink },
+const LEVELS: { label: string; value: ActivityLevel }[] = [
+  { label: 'Débutant', value: 'sedentary' },
+  { label: 'Intermédiaire', value: 'light' },
+  { label: 'Avancé', value: 'moderate' },
+  { label: 'Expert', value: 'intense' },
 ];
 
 export default function OnboardingStep3() {
@@ -41,14 +42,8 @@ export default function OnboardingStep3() {
     setStep3({ activityFrequency: frequency, activityType, activityLevel: level });
 
     const onboardingData: UserProfile = {
-      age: data.age!,
-      height: data.height!,
-      weight: data.weight!,
-      sex: data.sex!,
-      goal: data.goal!,
-      activityFrequency: frequency,
-      activityType,
-      activityLevel: level,
+      age: data.age!, height: data.height!, weight: data.weight!, sex: data.sex!,
+      goal: data.goal!, activityFrequency: frequency, activityType, activityLevel: level,
     };
 
     setLoading(true);
@@ -65,8 +60,7 @@ export default function OnboardingStep3() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={[styles.orb, styles.orbMint]} />
-      <View style={[styles.orb, styles.orbViolet]} />
+      <AnimatedBackground intensity="soft" />
 
       <View style={styles.progress}>
         <View style={[styles.dot, styles.dotDone]} />
@@ -87,7 +81,7 @@ export default function OnboardingStep3() {
                 style={[styles.chip, frequency === f && styles.chipActive]}
                 onPress={() => setFrequency(f)}>
                 <Text style={[styles.chipText, frequency === f && styles.chipTextActive]}>
-                  {f}x
+                  {f}×
                 </Text>
               </TouchableOpacity>
             ))}
@@ -116,12 +110,9 @@ export default function OnboardingStep3() {
             {LEVELS.map((l) => (
               <TouchableOpacity
                 key={l.value}
-                style={[
-                  styles.gridItem,
-                  level === l.value && { backgroundColor: `${l.accent}18`, borderColor: l.accent },
-                ]}
+                style={[styles.gridItem, level === l.value && styles.gridItemActive]}
                 onPress={() => setLevel(l.value)}>
-                <Text style={[styles.gridText, level === l.value && { color: l.accent }]}>
+                <Text style={[styles.gridText, level === l.value && styles.gridTextActive]}>
                   {l.label}
                 </Text>
               </TouchableOpacity>
@@ -135,8 +126,8 @@ export default function OnboardingStep3() {
         onPress={handleFinish}
         disabled={!canFinish || loading}>
         {loading
-          ? <ActivityIndicator color={DF.mint} />
-          : <Text style={styles.nextBtnText}>Voir mes recommandations IA</Text>}
+          ? <ActivityIndicator color="#fff" />
+          : <Text style={styles.nextBtnText}>Voir mes recommandations IA ✨</Text>}
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -145,69 +136,63 @@ export default function OnboardingStep3() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: DF.bg,
+    backgroundColor: OW.bg,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
-    overflow: 'hidden',
   },
-  orb: { position: 'absolute', borderRadius: 999 },
-  orbMint: { width: 180, height: 180, top: -50, left: -50, backgroundColor: DF.orb1 },
-  orbViolet: { width: 160, height: 160, bottom: 120, right: -50, backgroundColor: DF.orb2 },
 
   progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
-  dot: { height: 4, flex: 1, borderRadius: 2 },
-  dotActive: { backgroundColor: DF.mint },
-  dotDone: { backgroundColor: 'rgba(0, 255, 214, 0.45)' },
+  dot: { height: 5, flex: 1, borderRadius: 3 },
+  dotActive: { backgroundColor: OW.orange },
+  dotDone: { backgroundColor: OW.peach },
 
   content: { flex: 1, gap: Spacing.three },
-  eyebrow: { fontSize: 12, fontWeight: '700', color: DF.mint, textTransform: 'uppercase', letterSpacing: 0.2 },
-  title: { fontSize: 32, fontWeight: '800', color: DF.text, letterSpacing: -0.5 },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: OW.orange, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 32, fontWeight: '800', color: OW.text, letterSpacing: -0.5 },
 
   section: { gap: Spacing.two },
-  label: { fontSize: 13, fontWeight: '600', color: DF.textDim },
+  label: { fontSize: 13, fontWeight: '600', color: OW.textDim },
 
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   chip: {
     paddingHorizontal: Spacing.three,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: DF.bgCard,
-    borderWidth: 1,
-    borderColor: DF.borderDim,
+    backgroundColor: OW.bgCard,
+    borderWidth: 1.5,
+    borderColor: OW.borderDim,
   },
-  chipActive: { backgroundColor: 'rgba(0, 255, 214, 0.12)', borderColor: DF.mint },
-  chipText: { fontSize: 14, fontWeight: '600', color: DF.textDim },
-  chipTextActive: { color: DF.mint },
+  chipActive: { backgroundColor: 'rgba(249, 115, 22, 0.1)', borderColor: OW.orange },
+  chipText: { fontSize: 14, fontWeight: '600', color: OW.textDim },
+  chipTextActive: { color: OW.orange },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   gridItem: {
     paddingHorizontal: Spacing.three,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: DF.bgCard,
-    borderWidth: 1,
-    borderColor: DF.borderDim,
+    backgroundColor: OW.bgCard,
+    borderWidth: 1.5,
+    borderColor: OW.borderDim,
     minWidth: '45%',
     flex: 1,
     alignItems: 'center',
   },
-  gridItemActive: { backgroundColor: 'rgba(0, 255, 214, 0.12)', borderColor: DF.mint },
-  gridText: { fontSize: 14, fontWeight: '600', color: DF.textDim },
-  gridTextActive: { color: DF.mint },
+  gridItemActive: { backgroundColor: 'rgba(249, 115, 22, 0.1)', borderColor: OW.orange },
+  gridText: { fontSize: 14, fontWeight: '600', color: OW.textDim },
+  gridTextActive: { color: OW.orange },
 
   nextBtn: {
-    backgroundColor: 'rgba(0, 255, 214, 0.14)',
-    borderWidth: 1,
-    borderColor: DF.border,
-    borderRadius: 14,
+    backgroundColor: OW.orange,
+    borderRadius: 16,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: DF.mint,
+    shadowColor: OW.orange,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  nextBtnDisabled: { opacity: 0.35 },
-  nextBtnText: { fontSize: 17, fontWeight: '700', color: DF.mint },
+  nextBtnDisabled: { opacity: 0.38 },
+  nextBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
 });

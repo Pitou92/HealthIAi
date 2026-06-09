@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
-import { DF } from '@/constants/theme';
+import { OW } from '@/constants/theme';
 
 const MESSAGES = [
   'Analyse de votre profil...',
@@ -24,6 +24,11 @@ export function AILoader({ visible }: AILoaderProps) {
   const dot1 = useRef(new Animated.Value(0.3)).current;
   const dot2 = useRef(new Animated.Value(0.3)).current;
   const dot3 = useRef(new Animated.Value(0.3)).current;
+  // Blobs
+  const blobScale1 = useRef(new Animated.Value(1)).current;
+  const blobScale2 = useRef(new Animated.Value(1)).current;
+  const blobOp1 = useRef(new Animated.Value(0.7)).current;
+  const blobOp2 = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
     if (visible) {
@@ -50,42 +55,46 @@ export function AILoader({ visible }: AILoaderProps) {
 
   useEffect(() => {
     if (!mounted) return;
-
     const loops: Animated.CompositeAnimation[] = [];
     const timers: ReturnType<typeof setTimeout>[] = [];
 
-    const startLoop = (anim: Animated.Value, startDelay: number) => {
+    const startDot = (anim: Animated.Value, delay: number) => {
       const t = setTimeout(() => {
-        const loop = Animated.loop(
-          Animated.sequence([
-            Animated.timing(anim, { toValue: 1, duration: 380, useNativeDriver: true }),
-            Animated.timing(anim, { toValue: 0.25, duration: 380, useNativeDriver: true }),
-          ]),
-        );
-        loops.push(loop);
-        loop.start();
-      }, startDelay);
+        const l = Animated.loop(Animated.sequence([
+          Animated.timing(anim, { toValue: 1, duration: 380, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0.25, duration: 380, useNativeDriver: true }),
+        ]));
+        loops.push(l); l.start();
+      }, delay);
       timers.push(t);
     };
+    startDot(dot1, 0); startDot(dot2, 200); startDot(dot3, 400);
 
-    startLoop(dot1, 0);
-    startLoop(dot2, 200);
-    startLoop(dot3, 400);
-
-    return () => {
-      timers.forEach(clearTimeout);
-      loops.forEach((l) => l.stop());
+    // Blob animations
+    const addBlob = (scale: Animated.Value, op: Animated.Value, scaleTo: number, dur: number) => {
+      const sl = Animated.loop(Animated.sequence([
+        Animated.timing(scale, { toValue: scaleTo, duration: dur, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1, duration: dur, useNativeDriver: true }),
+      ]));
+      const ol = Animated.loop(Animated.sequence([
+        Animated.timing(op, { toValue: 0.85, duration: dur * 0.7, useNativeDriver: true }),
+        Animated.timing(op, { toValue: 0.45, duration: dur * 0.7, useNativeDriver: true }),
+      ]));
+      loops.push(sl, ol); sl.start(); ol.start();
     };
+    addBlob(blobScale1, blobOp1, 1.18, 3800);
+    addBlob(blobScale2, blobOp2, 1.14, 5200);
+
+    return () => { timers.forEach(clearTimeout); loops.forEach((l) => l.stop()); };
   }, [mounted]);
 
   if (!mounted) return null;
 
   return (
     <Animated.View style={[styles.container, { opacity: containerFade }]}>
-      {/* Ambient orbs */}
-      <View style={[styles.orb, styles.orbMint]} />
-      <View style={[styles.orb, styles.orbViolet]} />
-      <View style={[styles.orb, styles.orbGreen]} />
+      {/* Animated blobs on orange bg */}
+      <Animated.View style={[styles.blob1, { transform: [{ scale: blobScale1 }], opacity: blobOp1 }]} />
+      <Animated.View style={[styles.blob2, { transform: [{ scale: blobScale2 }], opacity: blobOp2 }]} />
 
       <View style={styles.inner}>
         <View style={styles.logoWrap}>
@@ -94,7 +103,7 @@ export function AILoader({ visible }: AILoaderProps) {
 
         <View style={styles.brand}>
           <Text style={styles.brandWhite}>Health</Text>
-          <Text style={styles.brandMint}>IAi</Text>
+          <Text style={styles.brandDim}>IAi</Text>
         </View>
 
         <View style={styles.dotsRow}>
@@ -114,47 +123,52 @@ export function AILoader({ visible }: AILoaderProps) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: DF.bg,
+    backgroundColor: OW.orange,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 50,
     overflow: 'hidden',
   },
-  orb: { position: 'absolute', borderRadius: 999 },
-  orbMint: { width: 280, height: 280, top: -80, left: -80, backgroundColor: DF.orb1 },
-  orbViolet: { width: 220, height: 220, bottom: -40, right: -60, backgroundColor: DF.orb2 },
-  orbGreen: { width: 160, height: 160, bottom: 100, left: 40, backgroundColor: DF.orb3 },
+
+  blob1: {
+    position: 'absolute',
+    width: 320, height: 320,
+    borderRadius: 160,
+    top: -80, right: -80,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  blob2: {
+    position: 'absolute',
+    width: 240, height: 240,
+    borderRadius: 120,
+    bottom: -40, left: -60,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
 
   inner: { alignItems: 'center', gap: 20 },
 
   logoWrap: {
-    width: 72,
-    height: 72,
+    width: 72, height: 72,
     borderRadius: 22,
-    backgroundColor: DF.bgCard,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     borderWidth: 1,
-    borderColor: DF.border,
+    borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
-    shadowColor: DF.mint,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 8,
   },
-  logoChar: { fontSize: 36, fontWeight: '800', color: DF.mint },
+  logoChar: { fontSize: 36, fontWeight: '800', color: '#fff' },
 
   brand: { flexDirection: 'row', alignItems: 'baseline' },
-  brandWhite: { fontSize: 44, fontWeight: '800', color: DF.text, letterSpacing: -1 },
-  brandMint: { fontSize: 44, fontWeight: '800', color: DF.mint, letterSpacing: -1, opacity: 0.7 },
+  brandWhite: { fontSize: 44, fontWeight: '800', color: '#fff', letterSpacing: -1 },
+  brandDim: { fontSize: 44, fontWeight: '800', color: 'rgba(255,255,255,0.55)', letterSpacing: -1 },
 
   dotsRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
-  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: DF.mint },
+  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#fff' },
 
   message: {
     fontSize: 14,
-    color: DF.textDim,
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
     paddingHorizontal: 48,
     marginTop: 4,
