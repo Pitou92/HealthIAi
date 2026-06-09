@@ -3,8 +3,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
+import { DF, Spacing } from '@/constants/theme';
 import { useAppStore } from '@/store/app';
-import { Spacing } from '@/constants/theme';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -45,27 +45,27 @@ export default function DashboardScreen() {
               <Text style={styles.date}>{formatDate()}</Text>
             </View>
 
-            {/* KPI row — hydration + sleep */}
+            {/* KPI row */}
             <View style={styles.kpiRow}>
-              <View style={[styles.kpiCard, { borderLeftColor: '#5AC8FA' }]}>
+              <View style={[styles.kpiCard, { borderLeftColor: DF.cyan }]}>
                 <Text style={styles.kpiLabel}>Hydratation</Text>
                 <Text style={styles.kpiValue}>
                   {(data.hydration.consumedMl / 1000).toFixed(1)}
                   <Text style={styles.kpiUnit}> / {data.hydration.targetMl / 1000}L</Text>
                 </Text>
                 <View style={styles.kpiTrack}>
-                  <View style={[styles.kpiFill, { width: `${hydrationPct * 100}%`, backgroundColor: '#5AC8FA' }]} />
+                  <View style={[styles.kpiFill, { width: `${hydrationPct * 100}%`, backgroundColor: DF.cyan }]} />
                 </View>
               </View>
 
-              <View style={[styles.kpiCard, { borderLeftColor: '#AF52DE' }]}>
+              <View style={[styles.kpiCard, { borderLeftColor: DF.violet }]}>
                 <Text style={styles.kpiLabel}>Sommeil</Text>
                 <Text style={styles.kpiValue}>
                   {data.sleep.actualHours}h
                   <Text style={styles.kpiUnit}> / {data.sleep.targetHours}h</Text>
                 </Text>
                 <View style={styles.kpiTrack}>
-                  <View style={[styles.kpiFill, { width: `${sleepPct * 100}%`, backgroundColor: '#AF52DE' }]} />
+                  <View style={[styles.kpiFill, { width: `${sleepPct * 100}%`, backgroundColor: DF.violet }]} />
                 </View>
               </View>
             </View>
@@ -75,13 +75,13 @@ export default function DashboardScreen() {
               <View style={styles.row}>
                 <Text style={styles.cardTitle}>Calories du jour</Text>
                 <Text style={styles.meta}>
-                  <Text style={styles.accent}>{data.calories.consumed}</Text>
+                  <Text style={[styles.accent, { color: DF.mint }]}>{data.calories.consumed}</Text>
                   {' / '}
                   {data.calories.target} kcal
                 </Text>
               </View>
               <View style={styles.track}>
-                <View style={[styles.fill, { width: `${caloriePct * 100}%` }]} />
+                <View style={[styles.fill, { width: `${caloriePct * 100}%`, backgroundColor: DF.mint }]} />
               </View>
               <Text style={styles.remaining}>{remaining} kcal restantes</Text>
             </View>
@@ -90,9 +90,9 @@ export default function DashboardScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Macronutriments</Text>
               <View style={styles.macrosRow}>
-                <MacroBar label="Protéines" value={data.macros.proteins} max={200} color="#208AEF" />
-                <MacroBar label="Glucides" value={data.macros.carbs} max={300} color="#34C759" />
-                <MacroBar label="Lipides" value={data.macros.fats} max={100} color="#FF9500" />
+                <MacroBar label="Protéines" value={data.macros.proteins} max={200} color={DF.mint} />
+                <MacroBar label="Glucides" value={data.macros.carbs} max={300} color={DF.green} />
+                <MacroBar label="Lipides" value={data.macros.fats} max={100} color={DF.violet} />
               </View>
             </View>
 
@@ -104,19 +104,19 @@ export default function DashboardScreen() {
                   {data.activityScore >= 80 ? 'Excellent' : data.activityScore >= 60 ? 'Bien' : 'À améliorer'}
                 </Text>
               </View>
-              <Text style={styles.scoreValue}>
+              <Text style={[styles.scoreValue, { color: DF.mint }]}>
                 {data.activityScore}
                 <Text style={styles.scoreMax}>/100</Text>
               </Text>
             </View>
 
             {/* Weekly plan */}
-            <View style={styles.card}>
+            <View style={[styles.card, { marginBottom: Spacing.four }]}>
               <Text style={styles.cardTitle}>Plan de la semaine</Text>
               <View style={styles.planList}>
                 {data.weeklyPlan.map((s) => (
                   <View key={s.day} style={styles.planRow}>
-                    <View style={styles.planDot} />
+                    <View style={[styles.planDot, { backgroundColor: DF.mint }]} />
                     <Text style={styles.planDay}>{s.day}</Text>
                     <Text style={styles.planType}>{s.type}</Text>
                     <Text style={styles.planDuration}>{s.duration} min</Text>
@@ -135,10 +135,7 @@ export default function DashboardScreen() {
 }
 
 function MacroBar({ label, value, max, color }: {
-  label: string;
-  value: number;
-  max: number;
-  color: string;
+  label: string; value: number; max: number; color: string;
 }) {
   const pct = Math.min(value / max, 1);
   return (
@@ -154,78 +151,86 @@ function MacroBar({ label, value, max, color }: {
 
 const macro = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', gap: Spacing.one },
-  value: { fontSize: 18, fontWeight: '700', color: '#000' },
-  unit: { fontSize: 12, fontWeight: '500', color: '#888' },
+  value: { fontSize: 18, fontWeight: '700', color: DF.text },
+  unit: { fontSize: 12, fontWeight: '500', color: DF.textMuted },
   track: {
     width: '100%',
     height: 80,
-    backgroundColor: '#EFEFEF',
+    backgroundColor: DF.bgInput,
     borderRadius: 8,
     overflow: 'hidden',
     justifyContent: 'flex-end',
+    borderWidth: 1,
+    borderColor: DF.borderDim,
   },
   fill: { width: '100%', borderRadius: 8 },
-  label: { fontSize: 12, color: '#888', textAlign: 'center' },
+  label: { fontSize: 12, color: DF.textMuted, textAlign: 'center' },
 });
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#fff' },
-  safe: { flex: 1, backgroundColor: '#fff' },
+  root: { flex: 1, backgroundColor: DF.bg },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   scroll: {
     paddingHorizontal: Spacing.four,
     paddingBottom: 100,
     gap: Spacing.three,
   },
+
   header: { paddingTop: Spacing.four, gap: 4 },
-  greeting: { fontSize: 26, fontWeight: '800', color: '#000' },
-  date: { fontSize: 14, color: '#888' },
+  greeting: { fontSize: 26, fontWeight: '800', color: DF.text },
+  date: { fontSize: 14, color: DF.textMuted },
 
   kpiRow: { flexDirection: 'row', gap: Spacing.two },
   kpiCard: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: DF.bgCard,
     borderRadius: 16,
     padding: Spacing.three,
     gap: Spacing.one,
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
+    borderWidth: 1,
+    borderColor: DF.borderDim,
   },
-  kpiLabel: { fontSize: 12, color: '#888', fontWeight: '600' },
-  kpiValue: { fontSize: 18, fontWeight: '700', color: '#000' },
-  kpiUnit: { fontSize: 13, fontWeight: '400', color: '#aaa' },
-  kpiTrack: { height: 5, backgroundColor: '#E0E0E0', borderRadius: 3, overflow: 'hidden', marginTop: 2 },
-  kpiFill: { height: '100%', borderRadius: 3 },
+  kpiLabel: { fontSize: 12, color: DF.textMuted, fontWeight: '600' },
+  kpiValue: { fontSize: 18, fontWeight: '700', color: DF.text },
+  kpiUnit: { fontSize: 13, fontWeight: '400', color: DF.textMuted },
+  kpiTrack: { height: 4, backgroundColor: DF.borderDim, borderRadius: 2, overflow: 'hidden', marginTop: 2 },
+  kpiFill: { height: '100%', borderRadius: 2 },
 
   card: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: DF.bgCard,
     borderRadius: 20,
     padding: Spacing.four,
     gap: Spacing.two,
+    borderWidth: 1,
+    borderColor: DF.borderDim,
+    shadowColor: DF.mint,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
   },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#333' },
-  meta: { fontSize: 14, color: '#888' },
-  accent: { fontSize: 16, fontWeight: '700', color: '#208AEF' },
+  cardTitle: { fontSize: 14, fontWeight: '600', color: DF.textDim },
+  meta: { fontSize: 14, color: DF.textMuted },
+  accent: { fontSize: 16, fontWeight: '700' },
   track: {
-    height: 10,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 5,
+    height: 8,
+    backgroundColor: DF.bgInput,
+    borderRadius: 4,
     overflow: 'hidden',
   },
-  fill: {
-    height: '100%',
-    backgroundColor: '#208AEF',
-    borderRadius: 5,
-  },
-  remaining: { fontSize: 13, color: '#aaa', textAlign: 'right' },
+  fill: { height: '100%', borderRadius: 4 },
+  remaining: { fontSize: 12, color: DF.textMuted, textAlign: 'right' },
   macrosRow: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
   scoreCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  scoreLabel: { fontSize: 13, color: '#888', marginTop: 2 },
-  scoreValue: { fontSize: 48, fontWeight: '800', color: '#208AEF' },
-  scoreMax: { fontSize: 20, fontWeight: '500', color: '#CCC' },
+  scoreLabel: { fontSize: 13, color: DF.textMuted, marginTop: 2 },
+  scoreValue: { fontSize: 48, fontWeight: '800' },
+  scoreMax: { fontSize: 20, fontWeight: '500', color: DF.borderDim },
   planList: { gap: Spacing.two, marginTop: Spacing.one },
   planRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  planDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#208AEF' },
-  planDay: { fontSize: 14, fontWeight: '600', color: '#000', width: 90 },
-  planType: { fontSize: 14, color: '#555', flex: 1 },
-  planDuration: { fontSize: 13, color: '#888' },
+  planDot: { width: 6, height: 6, borderRadius: 3 },
+  planDay: { fontSize: 14, fontWeight: '600', color: DF.text, width: 90 },
+  planType: { fontSize: 14, color: DF.textDim, flex: 1 },
+  planDuration: { fontSize: 13, color: DF.textMuted },
 });

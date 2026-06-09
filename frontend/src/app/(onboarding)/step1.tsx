@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DF, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { useOnboardingStore } from '@/store/onboarding';
-import { Spacing } from '@/constants/theme';
 import type { Sex } from '@/types/user';
 
 const SEX_OPTIONS: { label: string; value: Sex }[] = [
@@ -35,25 +35,25 @@ export default function OnboardingStep1() {
     weight !== '' && !isNaN(parsedWeight) && parsedWeight > 10 && parsedWeight < 500;
 
   function handleNext() {
-    if (!isValid) {
-      setError('Veuillez renseigner des valeurs valides.');
-      return;
-    }
+    if (!isValid) { setError('Veuillez renseigner des valeurs valides.'); return; }
     setStep1({ age: parsedAge, height: parsedHeight, weight: parsedWeight, sex: sex! });
     router.push(Routes.OnboardingStep2);
   }
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={[styles.orb, styles.orbMint]} />
+      <View style={[styles.orb, styles.orbViolet]} />
+
       <View style={styles.progress}>
         <View style={[styles.dot, styles.dotActive]} />
-        <View style={styles.dot} />
-        <View style={styles.dot} />
+        <View style={[styles.dot, styles.dotInactive]} />
+        <View style={[styles.dot, styles.dotInactive]} />
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Parlez-nous de vous</Text>
-        <Text style={styles.subtitle}>Étape 1 sur 3</Text>
+        <Text style={styles.eyebrow}>Étape 1 sur 3</Text>
+        <Text style={styles.title}>Parlez-nous{'\n'}de vous</Text>
 
         <View style={styles.form}>
           <View style={styles.row}>
@@ -62,7 +62,7 @@ export default function OnboardingStep1() {
               <TextInput
                 style={styles.input}
                 placeholder="28"
-                placeholderTextColor="#999"
+                placeholderTextColor={DF.textMuted}
                 keyboardType="numeric"
                 value={age}
                 onChangeText={(v) => { setAge(v); setError(null); }}
@@ -73,7 +73,7 @@ export default function OnboardingStep1() {
               <TextInput
                 style={styles.input}
                 placeholder="175"
-                placeholderTextColor="#999"
+                placeholderTextColor={DF.textMuted}
                 keyboardType="numeric"
                 value={height}
                 onChangeText={(v) => { setHeight(v); setError(null); }}
@@ -86,7 +86,7 @@ export default function OnboardingStep1() {
             <TextInput
               style={styles.input}
               placeholder="70"
-              placeholderTextColor="#999"
+              placeholderTextColor={DF.textMuted}
               keyboardType="decimal-pad"
               value={weight}
               onChangeText={(v) => { setWeight(v); setError(null); }}
@@ -125,42 +125,70 @@ export default function OnboardingStep1() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: DF.bg,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
+    overflow: 'hidden',
   },
-  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.four },
-  dot: { height: 6, flex: 1, borderRadius: 3, backgroundColor: '#E0E0E0' },
-  dotActive: { backgroundColor: '#208AEF' },
+  orb: { position: 'absolute', borderRadius: 999 },
+  orbMint: { width: 200, height: 200, top: -60, right: -60, backgroundColor: DF.orb1 },
+  orbViolet: { width: 160, height: 160, bottom: 120, left: -50, backgroundColor: DF.orb2 },
+
+  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
+  dot: { height: 4, flex: 1, borderRadius: 2 },
+  dotActive: { backgroundColor: DF.mint },
+  dotInactive: { backgroundColor: DF.borderDim },
+
   content: { flex: 1, gap: Spacing.three },
-  title: { fontSize: 28, fontWeight: '800', color: '#000' },
-  subtitle: { fontSize: 14, color: '#888', marginTop: -Spacing.two },
-  form: { gap: Spacing.three, marginTop: Spacing.two },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: DF.mint, textTransform: 'uppercase', letterSpacing: 0.2 },
+  title: { fontSize: 32, fontWeight: '800', color: DF.text, letterSpacing: -0.5, lineHeight: 38 },
+
+  form: { gap: Spacing.three, marginTop: Spacing.one },
   row: { flexDirection: 'row', gap: Spacing.two },
   halfField: { flex: 1, gap: Spacing.one },
   fullField: { gap: Spacing.one },
-  label: { fontSize: 14, fontWeight: '600', color: '#333' },
+  label: { fontSize: 13, fontWeight: '600', color: DF.textDim },
+
   input: {
-    backgroundColor: '#F0F0F3',
+    backgroundColor: DF.bgInput,
+    borderWidth: 1,
+    borderColor: DF.borderDim,
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#000',
+    color: DF.text,
   },
+
   chips: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
-  chip: { flex: 1, borderRadius: 12, paddingVertical: 14, alignItems: 'center', backgroundColor: '#F0F0F3' },
-  chipActive: { backgroundColor: '#208AEF' },
-  chipText: { fontSize: 15, fontWeight: '600', color: '#555' },
-  chipTextActive: { color: '#fff' },
-  error: { fontSize: 14, color: '#FF3B30', textAlign: 'center' },
+  chip: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    backgroundColor: DF.bgCard,
+    borderWidth: 1,
+    borderColor: DF.borderDim,
+  },
+  chipActive: { backgroundColor: 'rgba(0, 255, 214, 0.12)', borderColor: DF.mint },
+  chipText: { fontSize: 15, fontWeight: '600', color: DF.textDim },
+  chipTextActive: { color: DF.mint },
+
+  error: { fontSize: 13, color: DF.pink, textAlign: 'center' },
+
   nextBtn: {
-    backgroundColor: '#208AEF',
+    backgroundColor: 'rgba(0, 255, 214, 0.14)',
+    borderWidth: 1,
+    borderColor: DF.border,
     borderRadius: 14,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    marginTop: Spacing.two,
+    shadowColor: DF.mint,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 5,
   },
-  nextBtnDisabled: { opacity: 0.4 },
-  nextBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
+  nextBtnDisabled: { opacity: 0.35 },
+  nextBtnText: { fontSize: 17, fontWeight: '700', color: DF.mint },
 });
