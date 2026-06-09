@@ -69,16 +69,16 @@ const styles = StyleSheet.create({
   blob1: {
     width: 340, height: 340,
     top: -90, right: -90,
-    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
   },
   blob2: {
     width: 260, height: 260,
     bottom: 50, left: -70,
-    backgroundColor: 'rgba(251, 191, 36, 0.10)',
+    backgroundColor: 'rgba(59, 130, 246, 0.12)',
   },
   blob3: {
     width: 180, height: 180,
     top: 180, left: 30,
-    backgroundColor: 'rgba(253, 186, 116, 0.13)',
+    backgroundColor: 'rgba(34, 197, 94, 0.08)',
   },
 });

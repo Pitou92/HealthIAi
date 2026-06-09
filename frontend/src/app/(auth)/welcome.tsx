@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedBackground } from '@/components/animated-background';
-import { OW, Spacing } from '@/constants/theme';
+import { SP, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 
 export default function WelcomeScreen() {
@@ -19,8 +19,8 @@ export default function WelcomeScreen() {
         </View>
 
         <View style={styles.titleRow}>
-          <Text style={styles.titleOrange}>Health</Text>
-          <Text style={styles.titleDark}>IAi</Text>
+          <Text style={styles.titleGreen}>Health</Text>
+          <Text style={styles.titleWhite}>IAi</Text>
         </View>
 
         <Text style={styles.subtitle}>
@@ -53,7 +53,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: OW.bg,
+    backgroundColor: SP.bg,
   },
 
   hero: {
@@ -68,12 +68,12 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 30,
-    backgroundColor: OW.orange,
+    backgroundColor: SP.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: OW.orange,
+    shadowColor: SP.primary,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.45,
     shadowRadius: 24,
     elevation: 12,
     marginBottom: Spacing.two,
@@ -81,12 +81,12 @@ const styles = StyleSheet.create({
   logoChar: { fontSize: 52, fontWeight: '800', color: '#fff' },
 
   titleRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  titleOrange: { fontSize: 46, fontWeight: '800', color: OW.orange, letterSpacing: -1 },
-  titleDark: { fontSize: 46, fontWeight: '800', color: OW.text, letterSpacing: -1 },
+  titleGreen: { fontSize: 46, fontWeight: '800', color: SP.primary, letterSpacing: -1 },
+  titleWhite: { fontSize: 46, fontWeight: '800', color: SP.text, letterSpacing: -1 },
 
   subtitle: {
     fontSize: 16,
-    color: OW.textDim,
+    color: SP.textDim,
     textAlign: 'center',
     lineHeight: 26,
   },
@@ -99,15 +99,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: 'rgba(249, 115, 22, 0.08)',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
     borderWidth: 1,
-    borderColor: OW.border,
+    borderColor: SP.border,
   },
-  pillDot: { fontSize: 8, color: OW.orange },
-  pillText: { fontSize: 12, fontWeight: '600', color: OW.textDim },
+  pillDot: { fontSize: 8, color: SP.primary },
+  pillText: { fontSize: 12, fontWeight: '600', color: SP.textDim },
 
   bottomCard: {
-    backgroundColor: OW.bgCard,
+    backgroundColor: SP.bgCard,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingHorizontal: Spacing.four,
@@ -116,19 +116,19 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
   },
 
   primaryBtn: {
-    backgroundColor: OW.orange,
+    backgroundColor: SP.primary,
     borderRadius: 16,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: OW.orange,
+    shadowColor: SP.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 6,
   },
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: OW.border,
+    borderColor: SP.border,
   },
-  ghostBtnText: { fontSize: 17, fontWeight: '600', color: OW.orange },
+  ghostBtnText: { fontSize: 17, fontWeight: '600', color: SP.primary },
 });

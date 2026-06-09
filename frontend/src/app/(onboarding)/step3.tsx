@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedBackground } from '@/components/animated-background';
-import { OW, Spacing } from '@/constants/theme';
+import { SP, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { postOnboarding } from '@/services/api';
 import { useOnboardingStore } from '@/store/onboarding';
@@ -136,60 +136,60 @@ export default function OnboardingStep3() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: OW.bg,
+    backgroundColor: SP.bg,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
   },
 
   progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
   dot: { height: 5, flex: 1, borderRadius: 3 },
-  dotActive: { backgroundColor: OW.orange },
-  dotDone: { backgroundColor: OW.peach },
+  dotActive: { backgroundColor: SP.primary },
+  dotDone: { backgroundColor: 'rgba(34, 197, 94, 0.5)' },
 
   content: { flex: 1, gap: Spacing.three },
-  eyebrow: { fontSize: 12, fontWeight: '700', color: OW.orange, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 32, fontWeight: '800', color: OW.text, letterSpacing: -0.5 },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: SP.primary, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 32, fontWeight: '800', color: SP.text, letterSpacing: -0.5 },
 
   section: { gap: Spacing.two },
-  label: { fontSize: 13, fontWeight: '600', color: OW.textDim },
+  label: { fontSize: 13, fontWeight: '600', color: SP.textDim },
 
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   chip: {
     paddingHorizontal: Spacing.three,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: OW.bgCard,
+    backgroundColor: SP.bgCard,
     borderWidth: 1.5,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
   },
-  chipActive: { backgroundColor: 'rgba(249, 115, 22, 0.1)', borderColor: OW.orange },
-  chipText: { fontSize: 14, fontWeight: '600', color: OW.textDim },
-  chipTextActive: { color: OW.orange },
+  chipActive: { backgroundColor: 'rgba(34, 197, 94, 0.12)', borderColor: SP.primary },
+  chipText: { fontSize: 14, fontWeight: '600', color: SP.textDim },
+  chipTextActive: { color: SP.primary },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
   gridItem: {
     paddingHorizontal: Spacing.three,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: OW.bgCard,
+    backgroundColor: SP.bgCard,
     borderWidth: 1.5,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
     minWidth: '45%',
     flex: 1,
     alignItems: 'center',
   },
-  gridItemActive: { backgroundColor: 'rgba(249, 115, 22, 0.1)', borderColor: OW.orange },
-  gridText: { fontSize: 14, fontWeight: '600', color: OW.textDim },
-  gridTextActive: { color: OW.orange },
+  gridItemActive: { backgroundColor: 'rgba(34, 197, 94, 0.12)', borderColor: SP.primary },
+  gridText: { fontSize: 14, fontWeight: '600', color: SP.textDim },
+  gridTextActive: { color: SP.primary },
 
   nextBtn: {
-    backgroundColor: OW.orange,
+    backgroundColor: SP.primary,
     borderRadius: 16,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: OW.orange,
+    shadowColor: SP.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 6,
   },

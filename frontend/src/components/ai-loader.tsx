@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
-import { OW } from '@/constants/theme';
+import { SP } from '@/constants/theme';
 
 const MESSAGES = [
   'Analyse de votre profil...',
@@ -24,7 +24,6 @@ export function AILoader({ visible }: AILoaderProps) {
   const dot1 = useRef(new Animated.Value(0.3)).current;
   const dot2 = useRef(new Animated.Value(0.3)).current;
   const dot3 = useRef(new Animated.Value(0.3)).current;
-  // Blobs
   const blobScale1 = useRef(new Animated.Value(1)).current;
   const blobScale2 = useRef(new Animated.Value(1)).current;
   const blobOp1 = useRef(new Animated.Value(0.7)).current;
@@ -70,7 +69,6 @@ export function AILoader({ visible }: AILoaderProps) {
     };
     startDot(dot1, 0); startDot(dot2, 200); startDot(dot3, 400);
 
-    // Blob animations
     const addBlob = (scale: Animated.Value, op: Animated.Value, scaleTo: number, dur: number) => {
       const sl = Animated.loop(Animated.sequence([
         Animated.timing(scale, { toValue: scaleTo, duration: dur, useNativeDriver: true }),
@@ -92,7 +90,6 @@ export function AILoader({ visible }: AILoaderProps) {
 
   return (
     <Animated.View style={[styles.container, { opacity: containerFade }]}>
-      {/* Animated blobs on orange bg */}
       <Animated.View style={[styles.blob1, { transform: [{ scale: blobScale1 }], opacity: blobOp1 }]} />
       <Animated.View style={[styles.blob2, { transform: [{ scale: blobScale2 }], opacity: blobOp2 }]} />
 
@@ -123,7 +120,7 @@ export function AILoader({ visible }: AILoaderProps) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: OW.orange,
+    backgroundColor: SP.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 50,
@@ -135,14 +132,14 @@ const styles = StyleSheet.create({
     width: 320, height: 320,
     borderRadius: 160,
     top: -80, right: -80,
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.15)',
   },
   blob2: {
     position: 'absolute',
     width: 240, height: 240,
     borderRadius: 120,
     bottom: -40, left: -60,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
 
   inner: { alignItems: 'center', gap: 20 },
@@ -150,9 +147,9 @@ const styles = StyleSheet.create({
   logoWrap: {
     width: 72, height: 72,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
+    borderColor: 'rgba(255,255,255,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,

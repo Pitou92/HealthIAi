@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
-import { OW } from '@/constants/theme';
+import { SP } from '@/constants/theme';
 
 export default function TabsLayout() {
   return (
@@ -9,12 +9,12 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: 'rgba(249, 115, 22, 0.15)',
+          backgroundColor: SP.bgCard,
+          borderTopColor: SP.border,
           borderTopWidth: 1,
         },
-        tabBarActiveTintColor: OW.orange,
-        tabBarInactiveTintColor: OW.textMuted,
+        tabBarActiveTintColor: SP.primary,
+        tabBarInactiveTintColor: SP.textMuted,
       }}>
       <Tabs.Screen
         name="index"

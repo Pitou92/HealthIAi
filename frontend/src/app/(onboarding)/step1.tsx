@@ -4,7 +4,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedBackground } from '@/components/animated-background';
-import { OW, Spacing } from '@/constants/theme';
+import { SP, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { useOnboardingStore } from '@/store/onboarding';
 import type { Sex } from '@/types/user';
@@ -62,7 +62,7 @@ export default function OnboardingStep1() {
               <TextInput
                 style={styles.input}
                 placeholder="28"
-                placeholderTextColor={OW.textMuted}
+                placeholderTextColor={SP.textMuted}
                 keyboardType="numeric"
                 value={age}
                 onChangeText={(v) => { setAge(v); setError(null); }}
@@ -73,7 +73,7 @@ export default function OnboardingStep1() {
               <TextInput
                 style={styles.input}
                 placeholder="175"
-                placeholderTextColor={OW.textMuted}
+                placeholderTextColor={SP.textMuted}
                 keyboardType="numeric"
                 value={height}
                 onChangeText={(v) => { setHeight(v); setError(null); }}
@@ -86,7 +86,7 @@ export default function OnboardingStep1() {
             <TextInput
               style={styles.input}
               placeholder="70"
-              placeholderTextColor={OW.textMuted}
+              placeholderTextColor={SP.textMuted}
               keyboardType="decimal-pad"
               value={weight}
               onChangeText={(v) => { setWeight(v); setError(null); }}
@@ -125,35 +125,35 @@ export default function OnboardingStep1() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: OW.bg,
+    backgroundColor: SP.bg,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
   },
 
   progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
   dot: { height: 5, flex: 1, borderRadius: 3 },
-  dotActive: { backgroundColor: OW.orange },
-  dotInactive: { backgroundColor: 'rgba(249, 115, 22, 0.18)' },
+  dotActive: { backgroundColor: SP.primary },
+  dotInactive: { backgroundColor: 'rgba(34, 197, 94, 0.2)' },
 
   content: { flex: 1, gap: Spacing.three },
-  eyebrow: { fontSize: 12, fontWeight: '700', color: OW.orange, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 32, fontWeight: '800', color: OW.text, letterSpacing: -0.5, lineHeight: 38 },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: SP.primary, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 32, fontWeight: '800', color: SP.text, letterSpacing: -0.5, lineHeight: 38 },
 
   form: { gap: Spacing.three, marginTop: Spacing.one },
   row: { flexDirection: 'row', gap: Spacing.two },
   halfField: { flex: 1, gap: Spacing.one },
   fullField: { gap: Spacing.one },
-  label: { fontSize: 13, fontWeight: '600', color: OW.textDim },
+  label: { fontSize: 13, fontWeight: '600', color: SP.textDim },
 
   input: {
-    backgroundColor: OW.bgInput,
+    backgroundColor: SP.bgInput,
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     paddingVertical: 14,
     fontSize: 16,
-    color: OW.text,
+    color: SP.text,
     borderWidth: 1,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
   },
 
   chips: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
@@ -162,24 +162,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: OW.bgCard,
+    backgroundColor: SP.bgCard,
     borderWidth: 1.5,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
   },
-  chipActive: { backgroundColor: 'rgba(249, 115, 22, 0.08)', borderColor: OW.orange },
-  chipText: { fontSize: 15, fontWeight: '600', color: OW.textDim },
-  chipTextActive: { color: OW.orange },
+  chipActive: { backgroundColor: 'rgba(34, 197, 94, 0.12)', borderColor: SP.primary },
+  chipText: { fontSize: 15, fontWeight: '600', color: SP.textDim },
+  chipTextActive: { color: SP.primary },
 
-  error: { fontSize: 13, color: '#E53E3E', textAlign: 'center' },
+  error: { fontSize: 13, color: '#F87171', textAlign: 'center' },
 
   nextBtn: {
-    backgroundColor: OW.orange,
+    backgroundColor: SP.primary,
     borderRadius: 16,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: OW.orange,
+    shadowColor: SP.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 6,
   },

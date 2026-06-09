@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
 import { AnimatedBackground } from '@/components/animated-background';
-import { OW, Spacing } from '@/constants/theme';
+import { SP, Spacing } from '@/constants/theme';
 import { useAppStore } from '@/store/app';
 
 function getGreeting() {
@@ -47,14 +47,14 @@ export default function DashboardScreen() {
 
             {/* KPI row */}
             <View style={styles.kpiRow}>
-              <View style={[styles.kpiCard, { borderLeftColor: '#3B82F6' }]}>
+              <View style={[styles.kpiCard, { borderLeftColor: SP.secondary }]}>
                 <Text style={styles.kpiLabel}>Hydratation</Text>
-                <Text style={[styles.kpiValue, { color: '#3B82F6' }]}>
+                <Text style={[styles.kpiValue, { color: SP.secondary }]}>
                   {(data.hydration.consumedMl / 1000).toFixed(1)}
                   <Text style={styles.kpiUnit}> / {data.hydration.targetMl / 1000}L</Text>
                 </Text>
                 <View style={styles.kpiTrack}>
-                  <View style={[styles.kpiFill, { width: `${hydrationPct * 100}%`, backgroundColor: '#3B82F6' }]} />
+                  <View style={[styles.kpiFill, { width: `${hydrationPct * 100}%`, backgroundColor: SP.secondary }]} />
                 </View>
               </View>
 
@@ -90,9 +90,9 @@ export default function DashboardScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Macronutriments</Text>
               <View style={styles.macrosRow}>
-                <MacroBar label="Protéines" value={data.macros.proteins} max={200} color={OW.orange} />
+                <MacroBar label="Protéines" value={data.macros.proteins} max={200} color={SP.primary} />
                 <MacroBar label="Glucides" value={data.macros.carbs} max={300} color="#10B981" />
-                <MacroBar label="Lipides" value={data.macros.fats} max={100} color={OW.amber} />
+                <MacroBar label="Lipides" value={data.macros.fats} max={100} color={SP.secondary} />
               </View>
             </View>
 
@@ -151,22 +151,22 @@ function MacroBar({ label, value, max, color }: {
 
 const macro = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', gap: Spacing.one },
-  value: { fontSize: 18, fontWeight: '700', color: OW.text },
-  unit: { fontSize: 12, fontWeight: '500', color: OW.textMuted },
+  value: { fontSize: 18, fontWeight: '700', color: SP.text },
+  unit: { fontSize: 12, fontWeight: '500', color: SP.textMuted },
   track: {
     width: '100%', height: 80,
-    backgroundColor: OW.bgInput,
+    backgroundColor: SP.bgInput,
     borderRadius: 8, overflow: 'hidden',
     justifyContent: 'flex-end',
     borderWidth: 1,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
   },
   fill: { width: '100%', borderRadius: 8 },
-  label: { fontSize: 12, color: OW.textMuted, textAlign: 'center' },
+  label: { fontSize: 12, color: SP.textMuted, textAlign: 'center' },
 });
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: OW.bg },
+  root: { flex: 1, backgroundColor: SP.bg },
   safe: { flex: 1, backgroundColor: 'transparent' },
   scroll: {
     paddingHorizontal: Spacing.four,
@@ -174,60 +174,60 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   header: { paddingTop: Spacing.four, gap: 4 },
-  greeting: { fontSize: 26, fontWeight: '800', color: OW.text },
-  date: { fontSize: 14, color: OW.textMuted },
+  greeting: { fontSize: 26, fontWeight: '800', color: SP.text },
+  date: { fontSize: 14, color: SP.textMuted },
 
   kpiRow: { flexDirection: 'row', gap: Spacing.two },
   kpiCard: {
     flex: 1,
-    backgroundColor: OW.bgCard,
+    backgroundColor: SP.bgCard,
     borderRadius: 16,
     padding: Spacing.three,
     gap: Spacing.one,
     borderLeftWidth: 3,
     borderWidth: 1,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 2,
   },
-  kpiLabel: { fontSize: 12, color: OW.textMuted, fontWeight: '600' },
+  kpiLabel: { fontSize: 12, color: SP.textMuted, fontWeight: '600' },
   kpiValue: { fontSize: 18, fontWeight: '700' },
-  kpiUnit: { fontSize: 13, fontWeight: '400', color: OW.textMuted },
-  kpiTrack: { height: 4, backgroundColor: OW.bgInput, borderRadius: 2, overflow: 'hidden', marginTop: 2 },
+  kpiUnit: { fontSize: 13, fontWeight: '400', color: SP.textMuted },
+  kpiTrack: { height: 4, backgroundColor: SP.bgInput, borderRadius: 2, overflow: 'hidden', marginTop: 2 },
   kpiFill: { height: '100%', borderRadius: 2 },
 
   card: {
-    backgroundColor: OW.bgCard,
+    backgroundColor: SP.bgCard,
     borderRadius: 20,
     padding: Spacing.four,
     gap: Spacing.two,
     borderWidth: 1,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 3,
   },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardTitle: { fontSize: 14, fontWeight: '600', color: OW.textDim },
-  meta: { fontSize: 14, color: OW.textMuted },
-  accent: { fontSize: 16, fontWeight: '700', color: OW.orange },
-  track: { height: 8, backgroundColor: OW.bgInput, borderRadius: 4, overflow: 'hidden' },
-  fill: { height: '100%', backgroundColor: OW.orange, borderRadius: 4 },
-  remaining: { fontSize: 12, color: OW.textMuted, textAlign: 'right' },
+  cardTitle: { fontSize: 14, fontWeight: '600', color: SP.textDim },
+  meta: { fontSize: 14, color: SP.textMuted },
+  accent: { fontSize: 16, fontWeight: '700', color: SP.primary },
+  track: { height: 8, backgroundColor: SP.bgInput, borderRadius: 4, overflow: 'hidden' },
+  fill: { height: '100%', backgroundColor: SP.primary, borderRadius: 4 },
+  remaining: { fontSize: 12, color: SP.textMuted, textAlign: 'right' },
   macrosRow: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
   scoreCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  scoreLabel: { fontSize: 13, color: OW.textMuted, marginTop: 2 },
-  scoreValue: { fontSize: 48, fontWeight: '800', color: OW.orange },
-  scoreMax: { fontSize: 20, fontWeight: '500', color: OW.textMuted },
+  scoreLabel: { fontSize: 13, color: SP.textMuted, marginTop: 2 },
+  scoreValue: { fontSize: 48, fontWeight: '800', color: SP.primary },
+  scoreMax: { fontSize: 20, fontWeight: '500', color: SP.textMuted },
   planList: { gap: Spacing.two, marginTop: Spacing.one },
   planRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  planDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: OW.orange },
-  planDay: { fontSize: 14, fontWeight: '600', color: OW.text, width: 90 },
-  planType: { fontSize: 14, color: OW.textDim, flex: 1 },
-  planDuration: { fontSize: 13, color: OW.textMuted },
+  planDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: SP.primary },
+  planDay: { fontSize: 14, fontWeight: '600', color: SP.text, width: 90 },
+  planType: { fontSize: 14, color: SP.textDim, flex: 1 },
+  planDuration: { fontSize: 13, color: SP.textMuted },
 });

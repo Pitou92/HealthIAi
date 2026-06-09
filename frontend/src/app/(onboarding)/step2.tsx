@@ -4,7 +4,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedBackground } from '@/components/animated-background';
-import { OW, Spacing } from '@/constants/theme';
+import { SP, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { useOnboardingStore } from '@/store/onboarding';
 import type { Goal } from '@/types/user';
@@ -74,68 +74,68 @@ export default function OnboardingStep2() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: OW.bg,
+    backgroundColor: SP.bg,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
   },
 
   progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
   dot: { height: 5, flex: 1, borderRadius: 3 },
-  dotActive: { backgroundColor: OW.orange },
-  dotDone: { backgroundColor: OW.peach },
-  dotInactive: { backgroundColor: 'rgba(249, 115, 22, 0.18)' },
+  dotActive: { backgroundColor: SP.primary },
+  dotDone: { backgroundColor: 'rgba(34, 197, 94, 0.5)' },
+  dotInactive: { backgroundColor: 'rgba(34, 197, 94, 0.2)' },
 
   content: { flex: 1, gap: Spacing.three },
-  eyebrow: { fontSize: 12, fontWeight: '700', color: OW.orange, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 32, fontWeight: '800', color: OW.text, letterSpacing: -0.5 },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: SP.primary, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 32, fontWeight: '800', color: SP.text, letterSpacing: -0.5 },
 
   options: { gap: Spacing.two, marginTop: Spacing.one },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    backgroundColor: OW.bgCard,
+    backgroundColor: SP.bgCard,
     borderRadius: 18,
     padding: Spacing.three,
     borderWidth: 1.5,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 2,
   },
   cardActive: {
-    borderColor: OW.orange,
-    backgroundColor: 'rgba(249, 115, 22, 0.04)',
-    shadowColor: OW.orange,
-    shadowOpacity: 0.12,
+    borderColor: SP.primary,
+    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+    shadowColor: SP.primary,
+    shadowOpacity: 0.2,
   },
   cardEmoji: { fontSize: 28 },
   cardText: { flex: 1 },
-  cardLabel: { fontSize: 16, fontWeight: '700', color: OW.text },
-  cardLabelActive: { color: OW.orangeDeep },
-  cardDesc: { fontSize: 13, color: OW.textMuted, marginTop: 2 },
+  cardLabel: { fontSize: 16, fontWeight: '700', color: SP.text },
+  cardLabelActive: { color: SP.primary },
+  cardDesc: { fontSize: 13, color: SP.textMuted, marginTop: 2 },
   radio: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: OW.borderDim,
+    borderColor: SP.borderDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioActive: { borderColor: OW.orange },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: OW.orange },
+  radioActive: { borderColor: SP.primary },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: SP.primary },
 
   nextBtn: {
-    backgroundColor: OW.orange,
+    backgroundColor: SP.primary,
     borderRadius: 16,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: OW.orange,
+    shadowColor: SP.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 6,
   },
