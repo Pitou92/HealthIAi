@@ -8,7 +8,7 @@ export default function RootLayout() {
     <>
       <StatusBar style="light" />
       <AnimatedSplashOverlay />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#050c0a' } }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#111827' } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />

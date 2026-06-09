@@ -2,46 +2,43 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-// DepthFold dark neon palette — used across all screens
-export const DF = {
-  bg: '#050c0a',
-  bgMid: '#0a1a12',
-  bgCard: 'rgba(255, 255, 255, 0.048)',
-  bgInput: 'rgba(255, 255, 255, 0.07)',
+// Sport palette: Green × Blue × Dark
+export const SP = {
+  bg: '#111827',
+  bgCard: '#1F2937',
+  bgInput: '#374151',
 
-  text: '#e8fff8',
-  textDim: 'rgba(180, 255, 232, 0.58)',
-  textMuted: 'rgba(180, 255, 232, 0.32)',
+  text: '#F9FAFB',
+  textDim: '#D1D5DB',
+  textMuted: '#9CA3AF',
 
-  mint: '#00ffd6',
-  violet: '#c084fc',
-  green: '#4ade80',
-  pink: '#f472b6',
-  cyan: '#22d3ee',
+  primary: '#22C55E',
+  primaryDeep: '#16A34A',
+  secondary: '#3B82F6',
+  accent: 'rgba(34, 197, 94, 0.45)',
 
-  border: 'rgba(0, 255, 214, 0.22)',
-  borderViolet: 'rgba(192, 132, 252, 0.28)',
-  borderDim: 'rgba(255, 255, 255, 0.10)',
+  border: 'rgba(34, 197, 94, 0.25)',
+  borderDim: 'rgba(255, 255, 255, 0.08)',
 
-  orb1: 'rgba(0, 255, 214, 0.13)',
-  orb2: 'rgba(192, 132, 252, 0.12)',
-  orb3: 'rgba(8, 226, 96, 0.08)',
+  blob1: 'rgba(34, 197, 94, 0.15)',
+  blob2: 'rgba(59, 130, 246, 0.12)',
+  blob3: 'rgba(34, 197, 94, 0.08)',
 } as const;
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: SP.text,
+    background: SP.bg,
+    backgroundElement: SP.bgInput,
+    backgroundSelected: 'rgba(34, 197, 94, 0.15)',
+    textSecondary: SP.textDim,
   },
   dark: {
-    text: DF.text,
-    background: DF.bg,
-    backgroundElement: DF.bgCard,
-    backgroundSelected: 'rgba(0, 255, 214, 0.1)',
-    textSecondary: DF.textDim,
+    text: SP.text,
+    background: SP.bg,
+    backgroundElement: SP.bgInput,
+    backgroundSelected: 'rgba(34, 197, 94, 0.15)',
+    textSecondary: SP.textDim,
   },
 } as const;
 
