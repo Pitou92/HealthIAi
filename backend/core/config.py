@@ -17,5 +17,6 @@ class Settings:
     
     PROMPT_DIR: Path = BASE_DIR / "core" / "prompts"
     SYSTEM_PROMPT_PATH: Path = PROMPT_DIR / "system_prompt.md"
+    VISION_PROMPT: Path = PROMPT_DIR / "vision_prompt.md"
 
 settings = Settings()

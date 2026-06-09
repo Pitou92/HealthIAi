@@ -73,3 +73,20 @@ class RecommendationPlan(BaseModel):
     nutrition: NutritionPlan
     recommendation_logic: RecommendationLogic
     metadata: Metadata
+
+class FoodItem(BaseModel):
+    name: str = Field(..., description="Nom de l'aliment détecté")
+    estimated_quantity: str = Field(..., description="Quantité estimée (ex: 200g, 1 portion)")
+    calories: int = Field(..., description="Calories estimées pour cette quantité")
+    protein_g: float = Field(..., description="Protéines en grammes")
+    carbs_g: float = Field(..., description="Glucides en grammes")
+    fat_g: float = Field(..., description="Lipides en grammes")
+
+class MealAnalysis(BaseModel):
+    """Résultat de l'analyse visuelle d'un repas."""
+    detected_foods: List[FoodItem]
+    total_calories: int
+    total_protein: float
+    total_carbs: float
+    total_fat: float
+    analysis_summary: str = Field(..., description="Bref résumé nutritionnel du repas")
