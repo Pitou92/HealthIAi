@@ -50,7 +50,7 @@ export function AnimatedBackground({ intensity = 'normal' }: Props) {
   }, []);
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+    <View style={styles.fill} pointerEvents="none">
       <Animated.View
         style={[styles.blob, styles.blob1, { transform: [{ scale: b1Scale }], opacity: b1Op }]}
       />
@@ -65,6 +65,7 @@ export function AnimatedBackground({ intensity = 'normal' }: Props) {
 }
 
 const styles = StyleSheet.create({
+  fill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   blob: { position: 'absolute', borderRadius: 999 },
   blob1: {
     width: 340, height: 340,

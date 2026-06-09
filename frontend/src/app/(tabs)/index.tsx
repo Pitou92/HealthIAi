@@ -1,10 +1,13 @@
+import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
 import { AnimatedBackground } from '@/components/animated-background';
 import { SP, Spacing } from '@/constants/theme';
+import { Routes } from '@/navigation/routes';
+import { removeToken } from '@/services/token';
 import { useAppStore } from '@/store/app';
 
 function getGreeting() {
@@ -22,11 +25,18 @@ function formatDate() {
 }
 
 export default function DashboardScreen() {
-  const { loading, recommendations: data, fetchRecommendations } = useAppStore();
+  const router = useRouter();
+  const { loading, recommendations: data, loadRecommendations, reset } = useAppStore();
 
   useEffect(() => {
-    if (!data) fetchRecommendations();
+    if (!data) loadRecommendations();
   }, []);
+
+  async function handleLogout() {
+    await removeToken();
+    reset();
+    router.replace(Routes.Welcome);
+  }
 
   const caloriePct = data ? Math.min(data.calories.consumed / data.calories.target, 1) : 0;
   const remaining = data ? data.calories.target - data.calories.consumed : 0;
@@ -41,8 +51,13 @@ export default function DashboardScreen() {
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
             <View style={styles.header}>
-              <Text style={styles.greeting}>{getGreeting()} 👋</Text>
-              <Text style={styles.date}>{formatDate()}</Text>
+              <View style={styles.headerLeft}>
+                <Text style={styles.greeting}>{getGreeting()} 👋</Text>
+                <Text style={styles.date}>{formatDate()}</Text>
+              </View>
+              <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                <Text style={styles.logoutText}>Déco</Text>
+              </TouchableOpacity>
             </View>
 
             {/* KPI row */}
@@ -173,9 +188,19 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     gap: Spacing.three,
   },
-  header: { paddingTop: Spacing.four, gap: 4 },
+  header: { paddingTop: Spacing.four, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  headerLeft: { gap: 4 },
   greeting: { fontSize: 26, fontWeight: '800', color: SP.text },
   date: { fontSize: 14, color: SP.textMuted },
+  logoutBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: SP.borderDim,
+    marginTop: Spacing.two,
+  },
+  logoutText: { fontSize: 13, color: SP.textMuted, fontWeight: '600' },
 
   kpiRow: { flexDirection: 'row', gap: Spacing.two },
   kpiCard: {
