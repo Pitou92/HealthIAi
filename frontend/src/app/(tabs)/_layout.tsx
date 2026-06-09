@@ -1,20 +1,20 @@
 import { Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useColorScheme } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { DF } from '@/constants/theme';
 
 export default function TabsLayout() {
-  const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: colors.background },
-        tabBarActiveTintColor: colors.text,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: 'rgba(5, 12, 10, 0.96)',
+          borderTopColor: DF.border,
+          borderTopWidth: 1,
+        },
+        tabBarActiveTintColor: DF.mint,
+        tabBarInactiveTintColor: DF.textMuted,
       }}>
       <Tabs.Screen
         name="index"

@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DF, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { register } from '@/services/api';
 import { saveToken } from '@/services/token';
-import { Spacing } from '@/constants/theme';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -16,14 +16,8 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleRegister() {
-    if (!email || !password) {
-      setError('Veuillez remplir tous les champs.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.');
-      return;
-    }
+    if (!email || !password) { setError('Veuillez remplir tous les champs.'); return; }
+    if (password.length < 6) { setError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
     setError(null);
     setLoading(true);
     try {
@@ -39,30 +33,34 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={[styles.orb, styles.orbViolet]} />
+      <View style={[styles.orb, styles.orbMint]} />
+
       <TouchableOpacity style={styles.back} onPress={() => router.back()}>
         <Text style={styles.backText}>← Retour</Text>
       </TouchableOpacity>
 
       <View style={styles.content}>
+        <Text style={styles.eyebrow}>Nouveau ici ?</Text>
         <Text style={styles.title}>Créer un compte</Text>
 
-        <View style={styles.form}>
+        <View style={styles.card}>
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor="#999"
+            placeholderTextColor={DF.textMuted}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(v) => { setEmail(v); setError(null); }}
           />
           <TextInput
             style={styles.input}
             placeholder="Mot de passe (min. 6 caractères)"
-            placeholderTextColor="#999"
+            placeholderTextColor={DF.textMuted}
             secureTextEntry
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(v) => { setPassword(v); setError(null); }}
           />
 
           {error && <Text style={styles.error}>{error}</Text>}
@@ -72,8 +70,8 @@ export default function RegisterScreen() {
             onPress={handleRegister}
             disabled={loading}>
             {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.primaryBtnText}>S'inscrire</Text>}
+              ? <ActivityIndicator color={DF.mint} />
+              : <Text style={styles.primaryBtnText}>Créer mon compte</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push(Routes.Login)}>
@@ -86,29 +84,72 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: Spacing.four },
+  container: {
+    flex: 1,
+    backgroundColor: DF.bg,
+    paddingHorizontal: Spacing.four,
+    overflow: 'hidden',
+  },
+  orb: { position: 'absolute', borderRadius: 999 },
+  orbViolet: { width: 240, height: 240, top: -80, right: -80, backgroundColor: DF.orb2 },
+  orbMint: { width: 160, height: 160, bottom: 100, left: -40, backgroundColor: DF.orb1 },
+
   back: { paddingVertical: Spacing.three },
-  backText: { fontSize: 16, color: '#208AEF' },
-  content: { flex: 1, justifyContent: 'center', gap: Spacing.four },
-  title: { fontSize: 32, fontWeight: '800', color: '#000' },
-  form: { gap: Spacing.two },
+  backText: { fontSize: 16, color: DF.mint },
+
+  content: { flex: 1, justifyContent: 'center', gap: Spacing.three },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+    color: DF.violet,
+    textTransform: 'uppercase',
+  },
+  title: { fontSize: 34, fontWeight: '800', color: DF.text, letterSpacing: -0.5 },
+
+  card: {
+    backgroundColor: DF.bgCard,
+    borderWidth: 1,
+    borderColor: DF.borderViolet,
+    borderRadius: 24,
+    padding: Spacing.four,
+    gap: Spacing.two,
+    shadowColor: DF.violet,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+
   input: {
-    backgroundColor: '#F0F0F3',
+    backgroundColor: DF.bgInput,
+    borderWidth: 1,
+    borderColor: DF.borderDim,
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
     fontSize: 16,
-    color: '#000',
+    color: DF.text,
   },
-  error: { fontSize: 14, color: '#FF3B30', textAlign: 'center' },
+
+  error: { fontSize: 13, color: DF.pink, textAlign: 'center' },
+
   primaryBtn: {
-    backgroundColor: '#208AEF',
-    borderRadius: 14,
+    backgroundColor: 'rgba(192, 132, 252, 0.14)',
+    borderWidth: 1,
+    borderColor: DF.borderViolet,
+    borderRadius: 12,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    marginTop: Spacing.two,
+    marginTop: Spacing.one,
+    shadowColor: DF.violet,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    elevation: 5,
   },
-  btnDisabled: { opacity: 0.6 },
-  primaryBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
-  linkText: { fontSize: 15, color: '#208AEF', textAlign: 'center', marginTop: Spacing.two },
+  btnDisabled: { opacity: 0.5 },
+  primaryBtnText: { fontSize: 17, fontWeight: '700', color: DF.violet },
+
+  linkText: { fontSize: 14, color: DF.textDim, textAlign: 'center', marginTop: Spacing.one },
 });

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
+import { DF } from '@/constants/theme';
+
 const MESSAGES = [
   'Analyse de votre profil...',
   'Calcul de vos besoins caloriques...',
@@ -80,13 +82,20 @@ export function AILoader({ visible }: AILoaderProps) {
 
   return (
     <Animated.View style={[styles.container, { opacity: containerFade }]}>
+      {/* Ambient orbs */}
+      <View style={[styles.orb, styles.orbMint]} />
+      <View style={[styles.orb, styles.orbViolet]} />
+      <View style={[styles.orb, styles.orbGreen]} />
+
       <View style={styles.inner}>
-        <View style={styles.brand}>
-          <Text style={styles.brandWhite}>Health</Text>
-          <Text style={styles.brandDim}>IAi</Text>
+        <View style={styles.logoWrap}>
+          <Text style={styles.logoChar}>H</Text>
         </View>
 
-        <Text style={styles.tagline}>Votre coach IA personnel</Text>
+        <View style={styles.brand}>
+          <Text style={styles.brandWhite}>Health</Text>
+          <Text style={styles.brandMint}>IAi</Text>
+        </View>
 
         <View style={styles.dotsRow}>
           {([dot1, dot2, dot3] as Animated.Value[]).map((d, i) => (
@@ -105,21 +114,47 @@ export function AILoader({ visible }: AILoaderProps) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#208AEF',
+    backgroundColor: DF.bg,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 50,
+    overflow: 'hidden',
   },
+  orb: { position: 'absolute', borderRadius: 999 },
+  orbMint: { width: 280, height: 280, top: -80, left: -80, backgroundColor: DF.orb1 },
+  orbViolet: { width: 220, height: 220, bottom: -40, right: -60, backgroundColor: DF.orb2 },
+  orbGreen: { width: 160, height: 160, bottom: 100, left: 40, backgroundColor: DF.orb3 },
+
   inner: { alignItems: 'center', gap: 20 },
+
+  logoWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 22,
+    backgroundColor: DF.bgCard,
+    borderWidth: 1,
+    borderColor: DF.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+    shadowColor: DF.mint,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  logoChar: { fontSize: 36, fontWeight: '800', color: DF.mint },
+
   brand: { flexDirection: 'row', alignItems: 'baseline' },
-  brandWhite: { fontSize: 52, fontWeight: '800', color: '#fff', letterSpacing: -1 },
-  brandDim: { fontSize: 52, fontWeight: '800', color: 'rgba(255,255,255,0.45)', letterSpacing: -1 },
-  tagline: { fontSize: 15, color: 'rgba(255,255,255,0.65)', marginTop: -14 },
-  dotsRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  dot: { width: 11, height: 11, borderRadius: 5.5, backgroundColor: '#fff' },
+  brandWhite: { fontSize: 44, fontWeight: '800', color: DF.text, letterSpacing: -1 },
+  brandMint: { fontSize: 44, fontWeight: '800', color: DF.mint, letterSpacing: -1, opacity: 0.7 },
+
+  dotsRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: DF.mint },
+
   message: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
+    color: DF.textDim,
     textAlign: 'center',
     paddingHorizontal: 48,
     marginTop: 4,

@@ -3,15 +3,15 @@ import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DF, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { useOnboardingStore } from '@/store/onboarding';
-import { Spacing } from '@/constants/theme';
 import type { Goal } from '@/types/user';
 
-const GOALS: { label: string; description: string; value: Goal }[] = [
-  { label: 'Perte de poids', description: 'Brûler des graisses et affiner la silhouette', value: 'weight_loss' },
-  { label: 'Prise de masse', description: 'Développer la masse musculaire', value: 'muscle_gain' },
-  { label: 'Forme générale', description: 'Améliorer santé et endurance', value: 'fitness' },
+const GOALS: { label: string; description: string; value: Goal; accent: string }[] = [
+  { label: 'Perte de poids', description: 'Brûler des graisses et affiner la silhouette', value: 'weight_loss', accent: DF.mint },
+  { label: 'Prise de masse', description: 'Développer la masse musculaire', value: 'muscle_gain', accent: DF.violet },
+  { label: 'Forme générale', description: 'Améliorer santé et endurance', value: 'fitness', accent: DF.green },
 ];
 
 export default function OnboardingStep2() {
@@ -25,40 +25,52 @@ export default function OnboardingStep2() {
     router.push(Routes.OnboardingStep3);
   }
 
+  const activeGoal = GOALS.find((g) => g.value === goal);
+
   return (
     <SafeAreaView style={styles.container}>
+      <View style={[styles.orb, styles.orbViolet]} />
+      <View style={[styles.orb, styles.orbMint]} />
+
       <View style={styles.progress}>
         <View style={[styles.dot, styles.dotDone]} />
         <View style={[styles.dot, styles.dotActive]} />
-        <View style={styles.dot} />
+        <View style={[styles.dot, styles.dotInactive]} />
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Votre objectif</Text>
-        <Text style={styles.subtitle}>Étape 2 sur 3</Text>
+        <Text style={styles.eyebrow}>Étape 2 sur 3</Text>
+        <Text style={styles.title}>Votre{'\n'}objectif</Text>
 
         <View style={styles.options}>
           {GOALS.map((g) => (
             <TouchableOpacity
               key={g.value}
-              style={[styles.card, goal === g.value && styles.cardActive]}
+              style={[styles.card, goal === g.value && { borderColor: g.accent, backgroundColor: `${g.accent}10` }]}
               onPress={() => setGoal(g.value)}>
-              <Text style={[styles.cardLabel, goal === g.value && styles.cardLabelActive]}>
-                {g.label}
-              </Text>
-              <Text style={[styles.cardDesc, goal === g.value && styles.cardDescActive]}>
-                {g.description}
-              </Text>
+              <View style={[styles.cardDot, { backgroundColor: goal === g.value ? g.accent : DF.borderDim }]} />
+              <View style={styles.cardText}>
+                <Text style={[styles.cardLabel, goal === g.value && { color: g.accent }]}>
+                  {g.label}
+                </Text>
+                <Text style={styles.cardDesc}>{g.description}</Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
       <TouchableOpacity
-        style={[styles.nextBtn, !goal && styles.nextBtnDisabled]}
+        style={[
+          styles.nextBtn,
+          !goal && styles.nextBtnDisabled,
+          activeGoal && { borderColor: activeGoal.accent, backgroundColor: `${activeGoal.accent}20` },
+        ]}
         onPress={handleNext}
         disabled={!goal}>
-        <Text style={styles.nextBtnText}>Suivant →</Text>
+        <Text style={[styles.nextBtnText, activeGoal && { color: activeGoal.accent }]}>
+          Suivant →
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -67,38 +79,54 @@ export default function OnboardingStep2() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: DF.bg,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
+    overflow: 'hidden',
   },
-  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.four },
-  dot: { height: 6, flex: 1, borderRadius: 3, backgroundColor: '#E0E0E0' },
-  dotActive: { backgroundColor: '#208AEF' },
-  dotDone: { backgroundColor: '#6EC6FF' },
+  orb: { position: 'absolute', borderRadius: 999 },
+  orbViolet: { width: 220, height: 220, top: -70, left: -70, backgroundColor: DF.orb2 },
+  orbMint: { width: 140, height: 140, bottom: 100, right: -30, backgroundColor: DF.orb1 },
+
+  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
+  dot: { height: 4, flex: 1, borderRadius: 2 },
+  dotActive: { backgroundColor: DF.mint },
+  dotDone: { backgroundColor: 'rgba(0, 255, 214, 0.45)' },
+  dotInactive: { backgroundColor: DF.borderDim },
+
   content: { flex: 1, gap: Spacing.three },
-  title: { fontSize: 28, fontWeight: '800', color: '#000' },
-  subtitle: { fontSize: 14, color: '#888', marginTop: -Spacing.two },
-  options: { gap: Spacing.two, marginTop: Spacing.two },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: DF.mint, textTransform: 'uppercase', letterSpacing: 0.2 },
+  title: { fontSize: 32, fontWeight: '800', color: DF.text, letterSpacing: -0.5, lineHeight: 38 },
+
+  options: { gap: Spacing.two, marginTop: Spacing.one },
   card: {
-    backgroundColor: '#F0F0F3',
-    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    backgroundColor: DF.bgCard,
+    borderRadius: 18,
     padding: Spacing.three,
-    gap: Spacing.one,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: DF.borderDim,
   },
-  cardActive: { backgroundColor: '#EAF4FF', borderColor: '#208AEF' },
-  cardLabel: { fontSize: 17, fontWeight: '700', color: '#000' },
-  cardLabelActive: { color: '#208AEF' },
-  cardDesc: { fontSize: 14, color: '#666' },
-  cardDescActive: { color: '#208AEF' },
+  cardDot: { width: 10, height: 10, borderRadius: 5 },
+  cardText: { flex: 1, gap: 3 },
+  cardLabel: { fontSize: 16, fontWeight: '700', color: DF.text },
+  cardDesc: { fontSize: 13, color: DF.textDim },
+
   nextBtn: {
-    backgroundColor: '#208AEF',
+    backgroundColor: 'rgba(0, 255, 214, 0.14)',
+    borderWidth: 1,
+    borderColor: DF.border,
     borderRadius: 14,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    marginTop: Spacing.two,
+    shadowColor: DF.mint,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 5,
   },
-  nextBtnDisabled: { opacity: 0.4 },
-  nextBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
+  nextBtnDisabled: { opacity: 0.35 },
+  nextBtnText: { fontSize: 17, fontWeight: '700', color: DF.mint },
 });
