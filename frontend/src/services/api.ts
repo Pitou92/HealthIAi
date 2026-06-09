@@ -3,6 +3,11 @@ import { mockRecommendations } from '@/mocks/recommendations';
 
 const BASE_URL = 'http://localhost:8000';
 const USE_MOCK = true;
+const MOCK_DELAY_MS = 2800;
+
+function delay(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
 
 export async function postOnboarding(data: UserProfile): Promise<void> {
   if (USE_MOCK) return;
@@ -15,7 +20,10 @@ export async function postOnboarding(data: UserProfile): Promise<void> {
 }
 
 export async function getRecommendations(): Promise<typeof mockRecommendations> {
-  if (USE_MOCK) return mockRecommendations;
+  if (USE_MOCK) {
+    await delay(MOCK_DELAY_MS);
+    return mockRecommendations;
+  }
   const res = await fetch(`${BASE_URL}/recommendations`);
   if (!res.ok) throw new Error('Failed to fetch recommendations');
   return res.json();
