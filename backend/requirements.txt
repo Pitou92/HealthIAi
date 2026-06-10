@@ -5,3 +5,7 @@ python-dotenv
 pydantic
 python-multipart
 Pillow
+sqlalchemy[asyncio]
+aiomysql
+motor
+cryptography
