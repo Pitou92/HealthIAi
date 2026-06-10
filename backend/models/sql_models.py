@@ -6,6 +6,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
     age = Column(Integer, nullable=True)
     height = Column(Float, nullable=True)
     weight = Column(Float, nullable=True)

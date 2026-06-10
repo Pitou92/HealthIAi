@@ -2,10 +2,12 @@ fastapi
 uvicorn
 openai
 python-dotenv
-pydantic
+pydantic[email]
 python-multipart
 Pillow
 sqlalchemy[asyncio]
 aiomysql
 motor
 cryptography
+passlib[bcrypt]
+python-jose[cryptography]
