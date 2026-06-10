@@ -26,4 +26,8 @@ class Settings:
     SYSTEM_PROMPT_PATH: Path = PROMPT_DIR / "system_prompt.md"
     VISION_PROMPT: Path = PROMPT_DIR / "vision_prompt.md"
 
+    # Logging
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
 settings = Settings()
