@@ -26,8 +26,8 @@ export const useAppStore = create<AppStore>((set) => ({
   submitAndFetch: async (profile: UserProfile) => {
     set({ loading: true, error: null, success: false });
     try {
-      await submitOnboardingData(profile);
-      const data = await fetchRecommendations(profile);
+      const userId = await submitOnboardingData(profile);
+      const data = await fetchRecommendations(profile, userId);
       set({ recommendations: data, success: true });
     } catch (e) {
       set({ error: e instanceof Error ? e.message : 'Une erreur est survenue.' });

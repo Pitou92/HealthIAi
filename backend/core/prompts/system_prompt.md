@@ -116,6 +116,13 @@ If you violate any rule, the output is invalid.
 
 ---
 
-## 6. FINAL OUTPUT REQUIREMENT
+## 6. LANGUAGE (MANDATORY)
+- All `day` values in `weekly_schedule` MUST be French day names: Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi, Dimanche.
+- All `focus`, meal `name`, `goal_alignment`, and `constraints_applied` values MUST be written in French.
+- Exercise `name` values may remain in English (standard gym terminology).
+
+---
+
+## 7. FINAL OUTPUT REQUIREMENT
 Return ONLY the JSON object matching the schema above.
 Nothing else.

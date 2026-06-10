@@ -29,10 +29,16 @@ app = FastAPI(
     version=settings.VERSION
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("startup")
 async def startup():
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}...")
-    # Création des tables SQL au démarrage (pour le dev)
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)

@@ -96,6 +96,10 @@ const MEAL_TIMES = ['07:30', '12:30', '16:00', '19:30', '21:00'];
 const FITNESS_TO_SCORE: Record<string, number> = {
   Beginner: 35, Intermediate: 58, Advanced: 75, Expert: 90,
 };
+const DAY_FR: Record<string, string> = {
+  Monday: 'Lundi', Tuesday: 'Mardi', Wednesday: 'Mercredi',
+  Thursday: 'Jeudi', Friday: 'Vendredi', Saturday: 'Samedi', Sunday: 'Dimanche',
+};
 
 function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations {
   const totalCal = bp.nutrition.daily_calories;
@@ -114,7 +118,7 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
   }));
 
   const sportWeeklyPlan = bp.plan.weekly_schedule.map(d => ({
-    day: d.day,
+    day: DAY_FR[d.day] ?? d.day,
     type: d.focus,
     duration: d.duration_min,
     intensity: d.duration_min >= 60 ? 'Élevée' : d.duration_min >= 45 ? 'Modérée' : 'Légère',
@@ -135,7 +139,7 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
     hydration: { targetMl: hydrationTarget, consumedMl: 0 },
     sleep: { targetHours: 8, actualHours: 0 },
     weeklyPlan: bp.plan.weekly_schedule.map(d => ({
-      day: d.day,
+      day: DAY_FR[d.day] ?? d.day,
       type: d.focus,
       duration: d.duration_min,
     })),
@@ -152,30 +156,38 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
 
 // ─── Onboarding ───────────────────────────────────────────────────────────────
 
-export async function submitOnboardingData(data: UserProfile): Promise<void> {
+// Returns the MySQL user_id assigned by the backend (or 1 as fallback if DB not available)
+export async function submitOnboardingData(data: UserProfile): Promise<number> {
   if (USE_MOCK) {
     await delay(MOCK_SUBMIT_DELAY_MS);
-    return;
+    return 1;
   }
   const auth = await bearer();
-  const res = await fetch(`${API_BASE_URL}/auth/onboarding`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...auth },
-    body: JSON.stringify(toBackendProfile(data)),
-  });
-  if (!res.ok) throw new Error(`Erreur lors de l'onboarding (${res.status})`);
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/onboarding`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...auth },
+      body: JSON.stringify(toBackendProfile(data)),
+    });
+    if (!res.ok) return 1;
+    const result = await res.json();
+    return result.user_id ?? 1;
+  } catch {
+    // DB not configured in this environment — continue without saving
+    return 1;
+  }
 }
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
 
-export async function fetchRecommendations(profile?: UserProfile): Promise<Recommendations> {
+export async function fetchRecommendations(profile?: UserProfile, userId = 1): Promise<Recommendations> {
   // Falls back to mock if no profile (e.g. dashboard opened directly after app restart)
   if (USE_MOCK || !profile) {
     await delay(MOCK_RECO_DELAY_MS);
     return mockRecommendations;
   }
   const auth = await bearer();
-  const res = await fetch(`${API_BASE_URL}/ai/generate-plan`, {
+  const res = await fetch(`${API_BASE_URL}/ai/generate-plan?user_id=${userId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...auth },
     body: JSON.stringify(toBackendProfile(profile)),
@@ -214,7 +226,7 @@ export async function register(email: string, password: string): Promise<{ token
   });
   if (!res.ok) {
     const error = await res.json();
-    throw new Error(error.detail || 'Erreur lors de l’inscription');
+    throw new Error(error.detail || "Erreur lors de l’inscription");
   }
   const data = await res.json();
   return { token: data.access_token };

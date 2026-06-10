@@ -23,10 +23,15 @@ async def generate_plan(profile: UserProfile, user_id: int = Query(..., descript
 
         # Associer l'user_id et sauvegarder en NoSQL
         plan.user_id = user_id
-        await db_nosql.plans.insert_one(plan.model_dump())
-        logger.info(f"Successfully generated and saved plan for user_id: {user_id}")
+        try:
+            await db_nosql.plans.insert_one(plan.model_dump())
+            logger.info(f"Successfully generated and saved plan for user_id: {user_id}")
+        except Exception:
+            pass  # MongoDB not available — continue without saving
 
         return plan
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"AI generation failed for user_id {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
@@ -41,10 +46,15 @@ async def analyze_meal(file: UploadFile = File(...), user_id: int = Query(..., d
 
         # Associer l'user_id et sauvegarder en NoSQL
         analysis.user_id = user_id
-        await db_nosql.meal_analyses.insert_one(analysis.model_dump())
-        logger.info(f"Successfully analyzed and saved meal for user_id: {user_id}")
+        try:
+            await db_nosql.meal_analyses.insert_one(analysis.model_dump())
+            logger.info(f"Successfully analyzed and saved meal for user_id: {user_id}")
+        except Exception:
+            pass
 
         return analysis
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Vision analysis failed for user_id {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Vision analysis failed: {str(e)}")
@@ -75,11 +85,16 @@ async def generate_smart_plan(
         meal_analysis.user_id = user_id
         plan.user_id = user_id
 
-        await db_nosql.meal_analyses.insert_one(meal_analysis.model_dump())
-        await db_nosql.plans.insert_one(plan.model_dump())
-        logger.info(f"Successfully generated and saved smart plan and analysis for user_id: {user_id}")
+        try:
+            await db_nosql.meal_analyses.insert_one(meal_analysis.model_dump())
+            await db_nosql.plans.insert_one(plan.model_dump())
+            logger.info(f"Successfully generated and saved smart plan and analysis for user_id: {user_id}")
+        except Exception:
+            pass
 
         return plan
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Smart generation failed for user_id {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Smart generation failed: {str(e)}")
