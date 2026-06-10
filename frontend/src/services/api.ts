@@ -181,30 +181,13 @@ export async function fetchRecommendations(profile?: UserProfile): Promise<Recom
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-export async function login(email: string, password: string): Promise<{ token: string }> {
-  if (USE_MOCK) {
-    await delay(400);
-    return { token: 'mock-token-123' };
-  }
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error('Email ou mot de passe incorrect.');
-  return res.json();
+// Auth endpoints not yet implemented in backend — always mock
+export async function login(_email: string, _password: string): Promise<{ token: string }> {
+  await delay(400);
+  return { token: 'mock-token-123' };
 }
 
-export async function register(email: string, password: string): Promise<{ token: string }> {
-  if (USE_MOCK) {
-    await delay(400);
-    return { token: 'mock-token-123' };
-  }
-  const res = await fetch(`${API_BASE_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error('Création de compte échouée.');
-  return res.json();
+export async function register(_email: string, _password: string): Promise<{ token: string }> {
+  await delay(400);
+  return { token: 'mock-token-123' };
 }
