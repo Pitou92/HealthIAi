@@ -4,8 +4,26 @@ import json
 BASE_URL = "http://localhost:8000"
 
 def test_full_flow():
+    # 0. Register a new user
+    print("--- 0. Testing Registration (SQL) ---")
+    import time
+    email = f"user_{int(time.time())}@example.com"
+    register_data = {
+        "email": email,
+        "password": "password123"
+    }
+    response = requests.post(f"{BASE_URL}/auth/register", json=register_data)
+    if response.status_code == 200:
+        token = response.json()["access_token"]
+        print(f"✅ User registered successfully. Token received.")
+    else:
+        print(f"❌ Registration failed: {response.text}")
+        return
+
+    headers = {"Authorization": f"Bearer {token}"}
+
     # 1. Simuler l'Onboarding (SQL - MySQL)
-    print("--- 1. Testing Onboarding (SQL) ---")
+    print("\n--- 1. Testing Onboarding (SQL) ---")
     user_profile = {
         "goal": "Weight Loss",
         "age": 25,
@@ -21,7 +39,7 @@ def test_full_flow():
         "daily_activity": "Sedentary"
     }
     
-    response = requests.post(f"{BASE_URL}/auth/onboarding", json=user_profile)
+    response = requests.post(f"{BASE_URL}/auth/onboarding", json=user_profile, headers=headers)
     if response.status_code == 200:
         user_id = response.json()["user_id"]
         print(f"✅ User created in MySQL. ID: {user_id}")
