@@ -156,24 +156,38 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
 
 // ─── Onboarding ───────────────────────────────────────────────────────────────
 
-export async function submitOnboardingData(data: UserProfile): Promise<void> {
+// Returns the MySQL user_id assigned by the backend (or 1 as fallback if DB not available)
+export async function submitOnboardingData(data: UserProfile): Promise<number> {
   if (USE_MOCK) {
     await delay(MOCK_SUBMIT_DELAY_MS);
-    return;
+    return 1;
   }
-  // Real API: onboarding is bundled with the AI plan generation (no separate endpoint)
+  const auth = await bearer();
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/onboarding`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...auth },
+      body: JSON.stringify(toBackendProfile(data)),
+    });
+    if (!res.ok) return 1;
+    const result = await res.json();
+    return result.user_id ?? 1;
+  } catch {
+    // DB not configured in this environment — continue without saving
+    return 1;
+  }
 }
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
 
-export async function fetchRecommendations(profile?: UserProfile): Promise<Recommendations> {
+export async function fetchRecommendations(profile?: UserProfile, userId = 1): Promise<Recommendations> {
   // Falls back to mock if no profile (e.g. dashboard opened directly after app restart)
   if (USE_MOCK || !profile) {
     await delay(MOCK_RECO_DELAY_MS);
     return mockRecommendations;
   }
   const auth = await bearer();
-  const res = await fetch(`${API_BASE_URL}/ai/generate-plan`, {
+  const res = await fetch(`${API_BASE_URL}/ai/generate-plan?user_id=${userId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...auth },
     body: JSON.stringify(toBackendProfile(profile)),
