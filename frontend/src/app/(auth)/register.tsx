@@ -25,8 +25,8 @@ export default function RegisterScreen() {
       const { token } = await register(email, password);
       await saveToken(token);
       router.push(Routes.OnboardingStep1);
-    } catch {
-      setError('Une erreur est survenue. Réessayez.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Une erreur est survenue. Réessayez.');
     } finally {
       setLoading(false);
     }
