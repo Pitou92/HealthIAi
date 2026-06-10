@@ -157,7 +157,13 @@ export async function submitOnboardingData(data: UserProfile): Promise<void> {
     await delay(MOCK_SUBMIT_DELAY_MS);
     return;
   }
-  // Real API: onboarding is bundled with the AI plan generation (no separate endpoint)
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/auth/onboarding`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...auth },
+    body: JSON.stringify(toBackendProfile(data)),
+  });
+  if (!res.ok) throw new Error(`Erreur lors de l'onboarding (${res.status})`);
 }
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
@@ -181,13 +187,35 @@ export async function fetchRecommendations(profile?: UserProfile): Promise<Recom
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-// Auth endpoints not yet implemented in backend — always mock
-export async function login(_email: string, _password: string): Promise<{ token: string }> {
-  await delay(400);
-  return { token: 'mock-token-123' };
+export async function login(email: string, password: string): Promise<{ token: string }> {
+  if (USE_MOCK) {
+    await delay(400);
+    return { token: 'mock-token-123' };
+  }
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw new Error('Identifiants incorrects');
+  const data = await res.json();
+  return { token: data.access_token };
 }
 
-export async function register(_email: string, _password: string): Promise<{ token: string }> {
-  await delay(400);
-  return { token: 'mock-token-123' };
+export async function register(email: string, password: string): Promise<{ token: string }> {
+  if (USE_MOCK) {
+    await delay(400);
+    return { token: 'mock-token-123' };
+  }
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.detail || 'Erreur lors de l’inscription');
+  }
+  const data = await res.json();
+  return { token: data.access_token };
 }
