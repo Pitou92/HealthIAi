@@ -96,6 +96,10 @@ const MEAL_TIMES = ['07:30', '12:30', '16:00', '19:30', '21:00'];
 const FITNESS_TO_SCORE: Record<string, number> = {
   Beginner: 35, Intermediate: 58, Advanced: 75, Expert: 90,
 };
+const DAY_FR: Record<string, string> = {
+  Monday: 'Lundi', Tuesday: 'Mardi', Wednesday: 'Mercredi',
+  Thursday: 'Jeudi', Friday: 'Vendredi', Saturday: 'Samedi', Sunday: 'Dimanche',
+};
 
 function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations {
   const totalCal = bp.nutrition.daily_calories;
@@ -114,7 +118,7 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
   }));
 
   const sportWeeklyPlan = bp.plan.weekly_schedule.map(d => ({
-    day: d.day,
+    day: DAY_FR[d.day] ?? d.day,
     type: d.focus,
     duration: d.duration_min,
     intensity: d.duration_min >= 60 ? 'Élevée' : d.duration_min >= 45 ? 'Modérée' : 'Légère',
@@ -135,7 +139,7 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
     hydration: { targetMl: hydrationTarget, consumedMl: 0 },
     sleep: { targetHours: 8, actualHours: 0 },
     weeklyPlan: bp.plan.weekly_schedule.map(d => ({
-      day: d.day,
+      day: DAY_FR[d.day] ?? d.day,
       type: d.focus,
       duration: d.duration_min,
     })),

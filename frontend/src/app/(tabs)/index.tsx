@@ -129,14 +129,19 @@ export default function DashboardScreen() {
             <View style={[styles.card, { marginBottom: Spacing.four }]}>
               <Text style={styles.cardTitle}>Plan de la semaine</Text>
               <View style={styles.planList}>
-                {data.weeklyPlan.map((s) => (
-                  <View key={s.day} style={styles.planRow}>
-                    <View style={styles.planDot} />
-                    <Text style={styles.planDay}>{s.day}</Text>
-                    <Text style={styles.planType}>{s.type}</Text>
-                    <Text style={styles.planDuration}>{s.duration} min</Text>
-                  </View>
-                ))}
+                {data.weeklyPlan.map((s) => {
+                  const isRest = s.duration === 0;
+                  return (
+                    <View key={s.day} style={styles.planRow}>
+                      <View style={[styles.planDot, isRest && styles.planDotRest]} />
+                      <Text style={[styles.planDay, isRest && styles.planDayRest]}>{s.day}</Text>
+                      <Text style={[styles.planType, isRest && styles.planTypeRest]}>{s.type}</Text>
+                      <Text style={styles.planDuration}>
+                        {isRest ? 'Repos' : `${s.duration} min`}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
 
@@ -252,7 +257,10 @@ const styles = StyleSheet.create({
   planList: { gap: Spacing.two, marginTop: Spacing.one },
   planRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   planDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: SP.primary },
+  planDotRest: { backgroundColor: SP.textMuted },
   planDay: { fontSize: 14, fontWeight: '600', color: SP.text, width: 90 },
+  planDayRest: { color: SP.textMuted },
   planType: { fontSize: 14, color: SP.textDim, flex: 1 },
+  planTypeRest: { color: SP.textMuted, fontStyle: 'italic' },
   planDuration: { fontSize: 13, color: SP.textMuted },
 });
