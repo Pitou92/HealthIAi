@@ -67,6 +67,7 @@ class Metadata(BaseModel):
 
 class RecommendationPlan(BaseModel):
     """Structured AI response for health and fitness recommendations."""
+    user_id: Optional[int] = Field(None, description="Linked MySQL User ID")
     type: str
     user_context: UserContext
     plan: WeeklySchedule
@@ -84,6 +85,7 @@ class FoodItem(BaseModel):
 
 class MealAnalysis(BaseModel):
     """Résultat de l'analyse visuelle d'un repas."""
+    user_id: Optional[int] = Field(None, description="Linked MySQL User ID")
     detected_foods: List[FoodItem]
     total_calories: int
     total_protein: float
