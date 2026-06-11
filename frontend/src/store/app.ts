@@ -43,7 +43,8 @@ export const useAppStore = create<AppStore>((set) => ({
       const data = await fetchRecommendations();
       set({ recommendations: data, success: true });
     } catch (e) {
-      set({ error: e instanceof Error ? e.message : 'Une erreur est survenue.' });
+      const msg = e instanceof Error ? e.message : 'Une erreur est survenue.';
+      set({ error: msg });
     } finally {
       set({ loading: false });
     }

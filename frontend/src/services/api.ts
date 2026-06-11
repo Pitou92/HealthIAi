@@ -181,8 +181,12 @@ export async function submitOnboardingData(data: UserProfile): Promise<number> {
 // ─── Recommendations ──────────────────────────────────────────────────────────
 
 export async function fetchRecommendations(profile?: UserProfile, userId = 1): Promise<Recommendations> {
-  // Falls back to mock if no profile (e.g. dashboard opened directly after app restart)
-  if (USE_MOCK || !profile) {
+  if (!profile) {
+    // Dev mode only: mock data when no profile available
+    if (USE_MOCK) { await delay(MOCK_RECO_DELAY_MS); return mockRecommendations; }
+    throw new Error('NO_PROFILE');
+  }
+  if (USE_MOCK) {
     await delay(MOCK_RECO_DELAY_MS);
     return mockRecommendations;
   }
