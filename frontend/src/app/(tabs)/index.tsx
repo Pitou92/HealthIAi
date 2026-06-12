@@ -1,11 +1,15 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
 import { AnimatedBackground } from '@/components/animated-background';
-import { SP, Spacing } from '@/constants/theme';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Text } from '@/components/ui/text';
 import { Routes } from '@/navigation/routes';
 import { removeToken } from '@/services/token';
 import { useAppStore } from '@/store/app';
@@ -40,204 +44,228 @@ export default function DashboardScreen() {
 
   const today = todayFR();
   const todayWorkout = data?.sport?.weeklyPlan.find(d => d.day === today);
-
-  // No data and no loading: empty state
-  const showEmpty = !data && !loading;
-  const noProfile = error === 'NO_PROFILE' || showEmpty;
+  const noProfile = !data && !loading;
 
   if (noProfile) {
     return (
-      <View style={styles.root}>
+      <View className="flex-1 bg-bg">
         <AnimatedBackground intensity="soft" />
-        <SafeAreaView style={styles.emptySafe}>
-          <Text style={styles.emptyTitle}>Aucun plan actif</Text>
-          <Text style={styles.emptyText}>
+        <SafeAreaView className="flex-1 items-center justify-center px-8 gap-4">
+          <Text className="text-2xl font-extrabold text-fg text-center">Aucun plan actif</Text>
+          <Text className="text-base text-muted text-center leading-6">
             Complétez l'onboarding pour générer votre plan IA personnalisé.
           </Text>
           <TouchableOpacity
-            style={styles.emptyBtn}
+            className="mt-2 rounded-2xl bg-primary px-8 py-4"
             onPress={() => { reset(); router.replace(Routes.OnboardingStep1); }}>
-            <Text style={styles.emptyBtnText}>Commencer l'onboarding</Text>
+            <Text className="text-base font-bold text-white">Commencer l'onboarding</Text>
           </TouchableOpacity>
         </SafeAreaView>
       </View>
     );
   }
 
-  const totalMacroG = data
-    ? data.macros.proteins + data.macros.carbs + data.macros.fats
-    : 1;
+  const totalMacroG = data ? data.macros.proteins + data.macros.carbs + data.macros.fats : 1;
+  const scoreColor = data
+    ? data.activityScore >= 80 ? '#22C55E' : data.activityScore >= 60 ? '#3B82F6' : '#9CA3AF'
+    : '#9CA3AF';
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-bg">
       <AILoader visible={loading} />
 
       {data && (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView className="flex-1">
           <AnimatedBackground intensity="soft" />
-          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName="px-4 pb-28 gap-3"
+            showsVerticalScrollIndicator={false}
+          >
 
             {/* ── Header ── */}
-            <View style={styles.header}>
-              <View>
-                <Text style={styles.greeting}>{getGreeting()}</Text>
-                <Text style={styles.date}>{formatDate()}</Text>
+            <View className="flex-row items-start justify-between pt-6">
+              <View className="gap-0.5">
+                <Text className="text-3xl font-extrabold text-fg tracking-tight">{getGreeting()}</Text>
+                <Text className="text-sm text-muted">{formatDate()}</Text>
               </View>
-              <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                <Text style={styles.logoutText}>Déconnexion</Text>
+              <TouchableOpacity
+                className="mt-2 rounded-lg border border-white/8 px-3 py-1.5"
+                onPress={handleLogout}>
+                <Text className="text-sm text-muted font-medium">Déconnexion</Text>
               </TouchableOpacity>
             </View>
 
-            {/* ── Score ── */}
-            <View style={styles.card}>
-              <View style={styles.scorRow}>
-                <View style={styles.scoreLeft}>
-                  <Text style={styles.label}>Score d'activité</Text>
-                  <View style={styles.scoreTagRow}>
-                    <View style={[
-                      styles.scoreTag,
-                      data.activityScore >= 80 ? styles.scoreTagGreen
-                      : data.activityScore >= 60 ? styles.scoreTagBlue
-                      : styles.scoreTagMuted,
-                    ]}>
-                      <Text style={[
-                        styles.scoreTagText,
-                        data.activityScore >= 80 ? styles.scoreTagTextGreen
-                        : data.activityScore >= 60 ? styles.scoreTagTextBlue
-                        : styles.scoreTagTextMuted,
-                      ]}>
-                        {data.activityScore >= 80 ? 'Excellent' : data.activityScore >= 60 ? 'Bien' : 'À améliorer'}
-                      </Text>
-                    </View>
+            {/* ── Score d'activité ── */}
+            <Card>
+              <CardHeader>
+                <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+                  Score d'activité
+                </Text>
+              </CardHeader>
+              <CardContent>
+                <View className="flex-row items-center justify-between">
+                  <View className="gap-2">
+                    <Badge
+                      variant={data.activityScore >= 80 ? 'success' : data.activityScore >= 60 ? 'secondary' : 'muted'}
+                      label={data.activityScore >= 80 ? 'Excellent 🔥' : data.activityScore >= 60 ? 'Bien 👍' : 'À améliorer 💪'}
+                    />
+                    <Progress value={data.activityScore} color={scoreColor} className="w-48" />
+                  </View>
+                  <View className="flex-row items-end">
+                    <Text className="text-6xl font-extrabold text-fg leading-none">{data.activityScore}</Text>
+                    <Text className="text-xl text-muted font-medium mb-1">/100</Text>
                   </View>
                 </View>
-                <Text style={styles.scoreNumber}>
-                  {data.activityScore}
-                  <Text style={styles.scoreDenom}>/100</Text>
-                </Text>
-              </View>
-              <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, {
-                  width: `${data.activityScore}%` as any,
-                  backgroundColor: data.activityScore >= 80 ? SP.primary : data.activityScore >= 60 ? SP.secondary : SP.textMuted,
-                }]} />
-              </View>
-            </View>
+              </CardContent>
+            </Card>
 
             {/* ── KPIs ── */}
-            <View style={styles.kpiRow}>
-              <View style={[styles.kpiCard, styles.kpiGreen]}>
-                <Text style={styles.kpiEmoji}>🔥</Text>
-                <Text style={styles.kpiVal}>{data.calories.target.toLocaleString('fr')}</Text>
-                <Text style={styles.kpiUnit}>kcal / jour</Text>
+            <View className="flex-row gap-3">
+              <View className="flex-1 rounded-2xl border border-primary/20 bg-primary/8 p-5 gap-1">
+                <Text className="text-2xl">🔥</Text>
+                <Text className="text-2xl font-extrabold text-fg">
+                  {data.calories.target.toLocaleString('fr')}
+                </Text>
+                <Text className="text-xs text-muted font-medium">kcal / jour</Text>
               </View>
-              <View style={[styles.kpiCard, styles.kpiBlue]}>
-                <Text style={styles.kpiEmoji}>💧</Text>
-                <Text style={styles.kpiVal}>{(data.hydration.targetMl / 1000).toFixed(1)}</Text>
-                <Text style={styles.kpiUnit}>litres / jour</Text>
+              <View className="flex-1 rounded-2xl border border-secondary/20 bg-secondary/8 p-5 gap-1">
+                <Text className="text-2xl">💧</Text>
+                <Text className="text-2xl font-extrabold text-fg">
+                  {(data.hydration.targetMl / 1000).toFixed(1)}
+                </Text>
+                <Text className="text-xs text-muted font-medium">litres / jour</Text>
               </View>
             </View>
 
-            {/* ── Macros ── */}
-            <View style={styles.card}>
-              <Text style={styles.label}>Macronutriments</Text>
-              <MacroRow
-                label="Protéines"
-                value={data.macros.proteins}
-                pct={data.macros.proteins / totalMacroG}
-                color={SP.primary}
-              />
-              <MacroRow
-                label="Glucides"
-                value={data.macros.carbs}
-                pct={data.macros.carbs / totalMacroG}
-                color={SP.secondary}
-              />
-              <MacroRow
-                label="Lipides"
-                value={data.macros.fats}
-                pct={data.macros.fats / totalMacroG}
-                color="#A78BFA"
-              />
-            </View>
+            {/* ── Macronutriments ── */}
+            <Card>
+              <CardHeader>
+                <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+                  Macronutriments
+                </Text>
+              </CardHeader>
+              <CardContent>
+                <MacroRow label="Protéines" value={data.macros.proteins}
+                  pct={data.macros.proteins / totalMacroG} color="#22C55E" />
+                <MacroRow label="Glucides"  value={data.macros.carbs}
+                  pct={data.macros.carbs / totalMacroG}    color="#3B82F6" />
+                <MacroRow label="Lipides"   value={data.macros.fats}
+                  pct={data.macros.fats / totalMacroG}     color="#A78BFA" />
+              </CardContent>
+            </Card>
 
             {/* ── Entraînement du jour ── */}
             {todayWorkout && (
-              <View style={styles.card}>
-                <View style={styles.rowBetween}>
-                  <Text style={styles.label}>Entraînement du jour</Text>
-                  <View style={todayWorkout.duration === 0 ? styles.chipMuted : styles.chipGreen}>
-                    <Text style={todayWorkout.duration === 0 ? styles.chipTextMuted : styles.chipTextGreen}>
-                      {todayWorkout.duration === 0 ? 'Repos' : `${todayWorkout.duration} min`}
+              <Card>
+                <CardHeader>
+                  <View className="flex-row items-center justify-between">
+                    <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+                      Entraînement du jour
                     </Text>
+                    <Badge
+                      variant={todayWorkout.duration === 0 ? 'muted' : 'success'}
+                      label={todayWorkout.duration === 0 ? 'Repos' : `${todayWorkout.duration} min`}
+                    />
                   </View>
-                </View>
-                <Text style={styles.workoutName}>{todayWorkout.type}</Text>
-                {todayWorkout.duration > 0 && (
-                  <View style={styles.exerciseList}>
-                    {todayWorkout.exercises.map((ex, i) => (
-                      <View key={i} style={styles.exerciseRow}>
-                        <View style={styles.exerciseBullet} />
-                        <Text style={styles.exerciseText}>{ex}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
+                </CardHeader>
+                <CardContent>
+                  <Text className="text-lg font-bold text-fg">{todayWorkout.type}</Text>
+                  {todayWorkout.duration > 0 && (
+                    <View className="gap-1.5">
+                      {todayWorkout.exercises.map((ex, i) => (
+                        <View key={i} className="flex-row items-center gap-2.5">
+                          <View className="w-1.5 h-1.5 rounded-full bg-primary" />
+                          <Text className="text-sm text-fg-dim flex-1">{ex}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </CardContent>
+              </Card>
             )}
 
             {/* ── Plan des repas ── */}
-            <View style={styles.card}>
-              <Text style={styles.label}>Plan des repas</Text>
-              {data.nutrition.meals.map((meal, i) => (
-                <View
-                  key={meal.id}
-                  style={[styles.mealItem, i < data.nutrition.meals.length - 1 && styles.mealDivider]}
-                >
-                  <View style={styles.mealHeader}>
-                    <View style={styles.mealMeta}>
-                      <Text style={styles.mealTime}>{meal.time}</Text>
-                      <Text style={styles.mealName}>{meal.name}</Text>
+            <Card>
+              <CardHeader>
+                <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+                  Plan des repas
+                </Text>
+              </CardHeader>
+              <CardContent>
+                {data.nutrition.meals.map((meal, i) => (
+                  <View key={meal.id}>
+                    {i > 0 && <Separator className="my-1" />}
+                    <View className="gap-1 py-1.5">
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center gap-2.5">
+                          <Text className="text-xs font-semibold text-muted w-10">{meal.time}</Text>
+                          <Text className="text-base font-bold text-fg">{meal.name}</Text>
+                        </View>
+                        <Text className="text-sm font-bold text-primary">{meal.calories} kcal</Text>
+                      </View>
+                      <Text className="text-sm text-muted pl-12 leading-5">
+                        {meal.items.join(' · ')}
+                      </Text>
                     </View>
-                    <Text style={styles.mealKcal}>{meal.calories} kcal</Text>
                   </View>
-                  <Text style={styles.mealFoods}>{meal.items.join(' · ')}</Text>
-                </View>
-              ))}
-            </View>
+                ))}
+              </CardContent>
+            </Card>
 
             {/* ── Plan de la semaine ── */}
-            <View style={styles.card}>
-              <Text style={styles.label}>Semaine d'entraînement</Text>
-              {data.weeklyPlan.map((s) => {
-                const isToday = s.day === today;
-                const isRest = s.duration === 0;
-                return (
-                  <View key={s.day} style={[styles.weekRow, isToday && styles.weekRowToday]}>
-                    <View style={[styles.weekDot, isRest ? styles.weekDotRest : isToday ? styles.weekDotToday : styles.weekDotDefault]} />
-                    <Text style={[styles.weekDay, isToday && styles.weekDayToday, isRest && styles.weekDayRest]}>
-                      {s.day}
-                    </Text>
-                    <Text style={[styles.weekType, isRest && styles.weekTypeRest]}>{s.type}</Text>
-                    <Text style={styles.weekDuration}>
-                      {isRest ? 'Repos' : `${s.duration} min`}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
+            <Card>
+              <CardHeader>
+                <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+                  Semaine d'entraînement
+                </Text>
+              </CardHeader>
+              <CardContent>
+                {data.weeklyPlan.map((s) => {
+                  const isToday = s.day === today;
+                  const isRest = s.duration === 0;
+                  return (
+                    <View
+                      key={s.day}
+                      className={`flex-row items-center gap-2.5 rounded-xl px-2 py-2 ${isToday ? 'bg-primary/7' : ''}`}
+                    >
+                      <View className={`w-2 h-2 rounded-full ${
+                        isRest ? 'border border-white/20 bg-transparent'
+                        : isToday ? 'bg-primary'
+                        : 'bg-white/20'
+                      }`} />
+                      <Text className={`text-sm font-semibold w-24 ${
+                        isToday ? 'text-primary' : isRest ? 'text-muted' : 'text-fg-dim'
+                      }`}>{s.day}</Text>
+                      <Text className={`text-sm flex-1 ${isRest ? 'text-muted italic' : 'text-fg-dim'}`}>
+                        {s.type}
+                      </Text>
+                      <Text className="text-sm text-muted">
+                        {isRest ? 'Repos' : `${s.duration} min`}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </CardContent>
+            </Card>
 
             {/* ── Conseils IA ── */}
             {data.nutrition.tips.length > 0 && (
-              <View style={[styles.card, styles.tipsCard, { marginBottom: Spacing.six }]}>
-                <Text style={styles.label}>Conseils IA</Text>
-                {data.nutrition.tips.map((tip, i) => (
-                  <View key={i} style={styles.tipRow}>
-                    <Text style={styles.tipBullet}>✦</Text>
-                    <Text style={styles.tipText}>{tip}</Text>
-                  </View>
-                ))}
-              </View>
+              <Card className="border-primary/20 bg-primary/4">
+                <CardHeader>
+                  <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+                    Conseils IA
+                  </Text>
+                </CardHeader>
+                <CardContent>
+                  {data.nutrition.tips.map((tip, i) => (
+                    <View key={i} className="flex-row gap-2.5 items-start">
+                      <Text className="text-xs text-primary mt-0.5">✦</Text>
+                      <Text className="text-sm text-fg-dim flex-1 leading-5">{tip}</Text>
+                    </View>
+                  ))}
+                </CardContent>
+              </Card>
             )}
 
           </ScrollView>
@@ -247,152 +275,16 @@ export default function DashboardScreen() {
   );
 }
 
-// ── MacroRow component ──────────────────────────────────────────────────────
-
 function MacroRow({ label, value, pct, color }: {
   label: string; value: number; pct: number; color: string;
 }) {
   return (
-    <View style={m.row}>
-      <View style={m.labelRow}>
-        <Text style={m.label}>{label}</Text>
-        <Text style={m.value}>{value} g</Text>
+    <View className="gap-1.5">
+      <View className="flex-row justify-between">
+        <Text className="text-sm text-muted">{label}</Text>
+        <Text className="text-sm font-semibold text-fg-dim">{value} g</Text>
       </View>
-      <View style={m.track}>
-        <View style={[m.fill, { width: `${Math.round(pct * 100)}%` as any, backgroundColor: color }]} />
-      </View>
+      <Progress value={Math.round(pct * 100)} color={color} />
     </View>
   );
 }
-
-const m = StyleSheet.create({
-  row: { gap: 6 },
-  labelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  label: { fontSize: 13, color: SP.textMuted },
-  value: { fontSize: 13, fontWeight: '600', color: SP.textDim },
-  track: { height: 6, backgroundColor: SP.bgInput, borderRadius: 999, overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: 999 },
-});
-
-// ── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: SP.bg },
-  safe: { flex: 1, backgroundColor: 'transparent' },
-  scroll: { paddingHorizontal: Spacing.four, paddingBottom: 120, gap: Spacing.three },
-
-  // Empty state
-  emptySafe: {
-    flex: 1, alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: Spacing.five, gap: Spacing.three,
-  },
-  emptyTitle: { fontSize: 24, fontWeight: '800', color: SP.text, textAlign: 'center' },
-  emptyText: { fontSize: 15, color: SP.textMuted, textAlign: 'center', lineHeight: 22 },
-  emptyBtn: {
-    marginTop: Spacing.two,
-    backgroundColor: SP.primary, borderRadius: 14,
-    paddingHorizontal: Spacing.five, paddingVertical: Spacing.three,
-  },
-  emptyBtnText: { fontSize: 16, fontWeight: '700', color: '#fff' },
-
-  // Header
-  header: {
-    paddingTop: Spacing.four,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-  },
-  greeting: { fontSize: 28, fontWeight: '800', color: SP.text, letterSpacing: -0.5 },
-  date: { fontSize: 14, color: SP.textMuted, marginTop: 2 },
-  logoutBtn: {
-    paddingHorizontal: 12, paddingVertical: 6,
-    borderRadius: 8, borderWidth: 1, borderColor: SP.borderDim,
-    marginTop: Spacing.two,
-  },
-  logoutText: { fontSize: 13, color: SP.textMuted, fontWeight: '500' },
-
-  // Base card
-  card: {
-    backgroundColor: SP.bgCard,
-    borderRadius: 16,
-    padding: Spacing.four,
-    gap: Spacing.three,
-    borderWidth: 1,
-    borderColor: SP.borderDim,
-  },
-  label: { fontSize: 12, fontWeight: '600', color: SP.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-
-  // Score card
-  scorRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  scoreLeft: { gap: Spacing.one },
-  scoreTagRow: { flexDirection: 'row' },
-  scoreTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  scoreTagGreen: { backgroundColor: 'rgba(34,197,94,0.15)' },
-  scoreTagBlue: { backgroundColor: 'rgba(59,130,246,0.15)' },
-  scoreTagMuted: { backgroundColor: SP.bgInput },
-  scoreTagText: { fontSize: 12, fontWeight: '600' },
-  scoreTagTextGreen: { color: SP.primary },
-  scoreTagTextBlue: { color: SP.secondary },
-  scoreTagTextMuted: { color: SP.textMuted },
-  scoreNumber: { fontSize: 52, fontWeight: '800', color: SP.text, lineHeight: 56 },
-  scoreDenom: { fontSize: 20, fontWeight: '500', color: SP.textMuted },
-  progressTrack: { height: 4, backgroundColor: SP.bgInput, borderRadius: 999, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 999 },
-
-  // KPI row
-  kpiRow: { flexDirection: 'row', gap: Spacing.two },
-  kpiCard: {
-    flex: 1, borderRadius: 16, padding: Spacing.four, gap: 4,
-    borderWidth: 1, alignItems: 'flex-start',
-  },
-  kpiGreen: { backgroundColor: 'rgba(34,197,94,0.08)', borderColor: 'rgba(34,197,94,0.2)' },
-  kpiBlue: { backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.2)' },
-  kpiEmoji: { fontSize: 22, marginBottom: 4 },
-  kpiVal: { fontSize: 26, fontWeight: '800', color: SP.text },
-  kpiUnit: { fontSize: 12, color: SP.textMuted, fontWeight: '500' },
-
-  // Chips
-  chipGreen: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, backgroundColor: 'rgba(34,197,94,0.12)' },
-  chipMuted: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, backgroundColor: SP.bgInput },
-  chipTextGreen: { fontSize: 12, fontWeight: '600', color: SP.primary },
-  chipTextMuted: { fontSize: 12, fontWeight: '600', color: SP.textMuted },
-
-  // Workout
-  workoutName: { fontSize: 18, fontWeight: '700', color: SP.text },
-  exerciseList: { gap: Spacing.one },
-  exerciseRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  exerciseBullet: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: SP.primary },
-  exerciseText: { fontSize: 14, color: SP.textDim, flex: 1 },
-
-  // Meals
-  mealItem: { gap: 4, paddingBottom: Spacing.two },
-  mealDivider: { borderBottomWidth: 1, borderBottomColor: SP.borderDim },
-  mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  mealMeta: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  mealTime: { fontSize: 12, fontWeight: '600', color: SP.textMuted, width: 38 },
-  mealName: { fontSize: 15, fontWeight: '700', color: SP.text },
-  mealKcal: { fontSize: 13, fontWeight: '700', color: SP.primary },
-  mealFoods: { fontSize: 13, color: SP.textMuted, paddingLeft: 48, lineHeight: 18 },
-
-  // Weekly plan
-  weekRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingVertical: 6, paddingHorizontal: 8, borderRadius: 10,
-  },
-  weekRowToday: { backgroundColor: 'rgba(34,197,94,0.07)' },
-  weekDot: { width: 8, height: 8, borderRadius: 4 },
-  weekDotDefault: { backgroundColor: SP.borderDim },
-  weekDotToday: { backgroundColor: SP.primary },
-  weekDotRest: { backgroundColor: SP.bgInput, borderWidth: 1, borderColor: SP.borderDim },
-  weekDay: { fontSize: 14, fontWeight: '600', color: SP.textDim, width: 88 },
-  weekDayToday: { color: SP.primary },
-  weekDayRest: { color: SP.textMuted },
-  weekType: { fontSize: 14, color: SP.textDim, flex: 1 },
-  weekTypeRest: { color: SP.textMuted, fontStyle: 'italic' },
-  weekDuration: { fontSize: 13, color: SP.textMuted },
-
-  // Tips
-  tipsCard: { borderColor: 'rgba(34,197,94,0.2)', backgroundColor: 'rgba(34,197,94,0.04)' },
-  tipRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  tipBullet: { fontSize: 11, color: SP.primary, marginTop: 3 },
-  tipText: { fontSize: 14, color: SP.textDim, flex: 1, lineHeight: 20 },
-});
