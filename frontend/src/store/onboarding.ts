@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { ActivityLevel, ActivityType, Goal, Sex } from '@/types/user';
 
@@ -32,10 +34,19 @@ const initialData: OnboardingData = {
   activityLevel: null,
 };
 
-export const useOnboardingStore = create<OnboardingStore>((set) => ({
-  data: initialData,
-  setStep1: (fields) => set((s) => ({ data: { ...s.data, ...fields } })),
-  setStep2: (fields) => set((s) => ({ data: { ...s.data, ...fields } })),
-  setStep3: (fields) => set((s) => ({ data: { ...s.data, ...fields } })),
-  reset: () => set({ data: initialData }),
-}));
+export const useOnboardingStore = create<OnboardingStore>()(
+  persist(
+    (set) => ({
+      data: initialData,
+      setStep1: (fields) => set((s) => ({ data: { ...s.data, ...fields } })),
+      setStep2: (fields) => set((s) => ({ data: { ...s.data, ...fields } })),
+      setStep3: (fields) => set((s) => ({ data: { ...s.data, ...fields } })),
+      reset: () => set({ data: initialData }),
+    }),
+    {
+      name: 'healthai-onboarding-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
+

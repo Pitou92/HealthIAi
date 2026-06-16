@@ -1,0 +1,46 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=mysql+aiomysql://root:root@db:3306/Healthai
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DB_NAME=Healthai
+    depends_on:
+      - db
+      - mongodb
+  
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173" 
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=Healthai
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+  
+volumes:
+  db_data:
+  mongodb_data:

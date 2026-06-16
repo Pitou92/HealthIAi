@@ -19,7 +19,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: 'Résumé',
           tabBarIcon: ({ color, size }) => (
             <SymbolView
               name={{ ios: 'chart.bar.fill', android: 'bar_chart', web: 'bar_chart' }}
@@ -30,12 +30,38 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="nutrition"
         options={{
-          title: 'Explorer',
+          title: 'Nutrition',
           tabBarIcon: ({ color, size }) => (
             <SymbolView
-              name={{ ios: 'book.fill', android: 'book', web: 'book' }}
+              name={{ ios: 'leaf.fill', android: 'restaurant', web: 'restaurant' }}
+              tintColor={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="sport"
+        options={{
+          title: 'Sport',
+          tabBarIcon: ({ color, size }) => (
+            <SymbolView
+              name={{ ios: 'figure.run', android: 'fitness_center', web: 'fitness_center' }}
+              tintColor={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profil',
+          tabBarIcon: ({ color, size }) => (
+            <SymbolView
+              name={{ ios: 'person.fill', android: 'person', web: 'person' }}
               tintColor={color}
               size={size}
             />

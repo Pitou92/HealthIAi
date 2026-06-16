@@ -55,15 +55,30 @@ class AIService:
             logger.error(f"AI Service Error during recommendation generation: {e}")
             raise e
 
-    async def generate_smart_recommendations(self, user_profile_json: str, meal_analysis: MealAnalysis) -> RecommendationPlan:
+    async def generate_smart_recommendations(self, user_profile_json: str, meal_analysis: MealAnalysis, previous_plan: dict = None) -> RecommendationPlan:
         """
-        Generates an adaptive plan by combining user profile and a meal analysis.
+        Generates an adaptive plan by combining user profile, a meal analysis and an optional previous plan.
         """
         logger.info("Generating smart adaptive recommendations")
         combined_input = {
             "user_profile": json.loads(user_profile_json),
             "current_meal": meal_analysis.model_dump()
         }
+        if previous_plan:
+            combined_input["previous_plan"] = previous_plan
 
         # On utilise la même logique d'appel que generate_recommendations
+        return await self.generate_recommendations(json.dumps(combined_input))
+
+    async def generate_updated_recommendations(self, user_profile_json: str, previous_plan: dict = None) -> RecommendationPlan:
+        """
+        Generates an updated plan based on user profile changes and an existing plan.
+        """
+        logger.info("Generating updated incremental recommendations")
+        combined_input = {
+            "user_profile": json.loads(user_profile_json)
+        }
+        if previous_plan:
+            combined_input["previous_plan"] = previous_plan
+
         return await self.generate_recommendations(json.dumps(combined_input))
