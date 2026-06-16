@@ -1,10 +1,33 @@
-import type { Recommendations } from '@/mocks/recommendations';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Recommendations } from '@/types/recommendations';
 import { mockRecommendations } from '@/mocks/recommendations';
 import { API_BASE_URL, MOCK_RECO_DELAY_MS, MOCK_SUBMIT_DELAY_MS, USE_MOCK } from '@/config/api';
 import { getToken } from '@/services/token';
 import type { UserProfile } from '@/types/user';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const STORAGE_KEYS = {
+  NUTRITION_LOGS: 'healthai_nutrition_logs',
+  WATER_CONSUMED: 'healthai_water_consumed',
+};
+
+async function saveToStorage(key: string, value: any) {
+  try {
+    await AsyncStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error('Error saving to storage', e);
+  }
+}
+
+async function loadFromStorage<T>(key: string, defaultValue: T): Promise<T> {
+  try {
+    const val = await AsyncStorage.getItem(key);
+    return val ? JSON.parse(val) : defaultValue;
+  } catch (e) {
+    return defaultValue;
+  }
+}
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -38,6 +61,7 @@ interface BackendPlan {
     daily_calories: number;
     macros: { protein_g: number; carbs_g: number; fat_g: number };
     meals: Array<{ name: string; foods: string[] }>;
+    hydration_target_ml: number;
   };
   recommendation_logic: { goal_alignment: string; constraints_applied: string[] };
   metadata: { model: string; prompt_version: string; generated_at: string };
@@ -125,8 +149,7 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
     exercises: d.exercises.map(e => `${e.name} ${e.sets}×${e.reps}`),
   }));
 
-  // Hydration target: 35 ml per kg body weight, rounded to nearest 100 ml
-  const hydrationTarget = Math.round((profile.weight * 35) / 100) * 100;
+  const hydrationTarget = bp.nutrition.hydration_target_ml || Math.round((profile.weight * 35) / 100) * 100;
 
   return {
     calories: { target: totalCal, consumed: 0 },
@@ -154,12 +177,58 @@ function fromBackendPlan(bp: BackendPlan, profile: UserProfile): Recommendations
   };
 }
 
+// ─── Tracking types ──────────────────────────────────────────────────────────
+
+export interface DailyProgress {
+  user_id: number;
+  date: string;
+  calories_consumed: number;
+  calories_target: number;
+  protein_consumed: number;
+  protein_target: number;
+  carbs_consumed: number;
+  carbs_target: number;
+  fat_consumed: number;
+  fat_target: number;
+  water_consumed_ml: number;
+  water_target_ml: number;
+  current_weight_kg: number | null;
+  workout_completed: boolean;
+  workout_name: string | null;
+}
+
+export interface NutritionLog {
+  user_id: number;
+  name: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  timestamp: string;
+  items: string[];
+}
+
+// ─── Mock State ──────────────────────────────────────────────────────────────
+
+let mockNutritionLogs: NutritionLog[] = [];
+let mockWaterConsumed = 0;
+let mockStateInitialized = false;
+
+async function initMockState() {
+  if (mockStateInitialized) return;
+  mockNutritionLogs = await loadFromStorage<NutritionLog[]>(STORAGE_KEYS.NUTRITION_LOGS, [
+    { user_id: 1, name: "Petit Déjeuner", calories: 350, protein_g: 15, carbs_g: 45, fat_g: 8, timestamp: new Date().toISOString(), items: ["Flocons d'avoine", "Banane"] }
+  ]);
+  mockWaterConsumed = await loadFromStorage<number>(STORAGE_KEYS.WATER_CONSUMED, 1200);
+  mockStateInitialized = true;
+}
+
 // ─── Onboarding ───────────────────────────────────────────────────────────────
 
-// Returns the MySQL user_id assigned by the backend (or 1 as fallback if DB not available)
 export async function submitOnboardingData(data: UserProfile): Promise<number> {
   if (USE_MOCK) {
     await delay(MOCK_SUBMIT_DELAY_MS);
+    await initMockState();
     return 1;
   }
   const auth = await bearer();
@@ -173,7 +242,6 @@ export async function submitOnboardingData(data: UserProfile): Promise<number> {
     const result = await res.json();
     return result.user_id ?? 1;
   } catch {
-    // DB not configured in this environment — continue without saving
     return 1;
   }
 }
@@ -182,12 +250,17 @@ export async function submitOnboardingData(data: UserProfile): Promise<number> {
 
 export async function fetchRecommendations(profile?: UserProfile, userId = 1): Promise<Recommendations> {
   if (!profile) {
-    // Dev mode only: mock data when no profile available
-    if (USE_MOCK) { await delay(MOCK_RECO_DELAY_MS); return mockRecommendations; }
-    throw new Error('NO_PROFILE');
+    if (USE_MOCK) { 
+      await delay(MOCK_RECO_DELAY_MS); 
+      await initMockState();
+      return mockRecommendations; 
+    }
+    // If no profile and not mock, we should try to fetch the current plan
+    return fetchCurrentPlan(userId);
   }
   if (USE_MOCK) {
     await delay(MOCK_RECO_DELAY_MS);
+    await initMockState();
     return mockRecommendations;
   }
   const auth = await bearer();
@@ -201,11 +274,29 @@ export async function fetchRecommendations(profile?: UserProfile, userId = 1): P
   return fromBackendPlan(bp, profile);
 }
 
+export async function fetchCurrentPlan(userId: number): Promise<Recommendations> {
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/ai/current-plan?user_id=${userId}`, {
+    method: 'GET',
+    headers: { ...auth },
+  });
+  
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('NO_PLAN');
+    throw new Error(`Erreur lors de la récupération du plan (${res.status})`);
+  }
+  
+  const bp: BackendPlan = await res.json();
+  // Since we don't have the full profile here, we provide a partial one or use defaults in fromBackendPlan
+  return fromBackendPlan(bp, { weight: 70 } as any); 
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export async function login(email: string, password: string): Promise<{ token: string }> {
   if (USE_MOCK) {
     await delay(400);
+    await initMockState();
     return { token: 'mock-token-123' };
   }
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -221,6 +312,7 @@ export async function login(email: string, password: string): Promise<{ token: s
 export async function register(email: string, password: string): Promise<{ token: string }> {
   if (USE_MOCK) {
     await delay(400);
+    await initMockState();
     return { token: 'mock-token-123' };
   }
   const res = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -234,4 +326,145 @@ export async function register(email: string, password: string): Promise<{ token
   }
   const data = await res.json();
   return { token: data.access_token };
+}
+
+// ─── Tracking ─────────────────────────────────────────────────────────────────
+
+export async function fetchTodayProgress(userId: number): Promise<DailyProgress> {
+  if (USE_MOCK) {
+    await delay(300);
+    await initMockState();
+    const totalCals = mockNutritionLogs.reduce((acc, l) => acc + l.calories, 0);
+    const totalProt = mockNutritionLogs.reduce((acc, l) => acc + l.protein_g, 0);
+    const totalCarbs = mockNutritionLogs.reduce((acc, l) => acc + l.carbs_g, 0);
+    const totalFat = mockNutritionLogs.reduce((acc, l) => acc + l.fat_g, 0);
+
+    return {
+      user_id: userId,
+      date: new Date().toISOString().split('T')[0],
+      calories_consumed: totalCals,
+      calories_target: 2200,
+      protein_consumed: totalProt,
+      protein_target: 160,
+      carbs_consumed: totalCarbs,
+      carbs_target: 250,
+      fat_consumed: totalFat,
+      fat_target: 70,
+      water_consumed_ml: mockWaterConsumed,
+      water_target_ml: 2500,
+      current_weight_kg: 78.5,
+      workout_completed: false,
+      workout_name: null,
+    };
+  }
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/progress/today?user_id=${userId}`, {
+    method: 'GET',
+    headers: { ...auth },
+  });
+  if (!res.ok) throw new Error('Impossible de charger la progression');
+  return res.json();
+}
+
+export async function logHydration(userId: number, amountMl: number): Promise<void> {
+  if (USE_MOCK) { 
+    await delay(200); 
+    await initMockState();
+    mockWaterConsumed += amountMl;
+    await saveToStorage(STORAGE_KEYS.WATER_CONSUMED, mockWaterConsumed);
+    return; 
+  }
+  const auth = await bearer();
+  await fetch(`${API_BASE_URL}/progress/log/hydration`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...auth },
+    body: JSON.stringify({ user_id: userId, amount_ml: amountMl }),
+  });
+}
+
+export async function logWeight(userId: number, weightKg: number): Promise<void> {
+  if (USE_MOCK) { await delay(200); return; }
+  const auth = await bearer();
+  await fetch(`${API_BASE_URL}/progress/log/weight`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...auth },
+    body: JSON.stringify({ user_id: userId, weight_kg: weightKg }),
+  });
+}
+
+export async function analyzeMeal(userId: number, imageUri: string): Promise<any> {
+  if (USE_MOCK) {
+    await delay(1500);
+    await initMockState();
+    return {
+      total_calories: 450,
+      total_protein: 30,
+      total_carbs: 45,
+      total_fat: 15,
+      analysis_summary: "Un repas équilibré composé de poulet et de riz.",
+      detected_foods: [
+        { name: "Poulet grillé", estimated_quantity: "150g", calories: 250, protein_g: 25, carbs_g: 0, fat_g: 5 },
+        { name: "Riz basmati", estimated_quantity: "150g", calories: 200, protein_g: 5, carbs_g: 45, fat_g: 10 }
+      ]
+    };
+  }
+  const auth = await bearer();
+  const formData = new FormData();
+
+  if (typeof window !== 'undefined') {
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    formData.append('file', blob, 'meal.jpg');
+  } else {
+    // @ts-ignore
+    formData.append('file', {
+      uri: imageUri,
+      name: 'meal.jpg',
+      type: 'image/jpeg',
+    });
+  }
+
+  const res = await fetch(`${API_BASE_URL}/ai/analyze-meal?user_id=${userId}`, {
+    method: 'POST',
+    headers: { ...auth },
+    body: formData,
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Erreur lors de l'analyse du repas");
+  }
+  return res.json();
+}
+
+export async function saveNutritionLog(log: Omit<NutritionLog, 'timestamp'>): Promise<void> {
+  if (USE_MOCK) { 
+    await delay(200); 
+    await initMockState();
+    mockNutritionLogs.unshift({
+      ...log,
+      timestamp: new Date().toISOString()
+    });
+    await saveToStorage(STORAGE_KEYS.NUTRITION_LOGS, mockNutritionLogs);
+    return; 
+  }
+  const auth = await bearer();
+  await fetch(`${API_BASE_URL}/progress/log/nutrition`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...auth },
+    body: JSON.stringify(log),
+  });
+}
+
+export async function fetchNutritionLogs(userId: number): Promise<NutritionLog[]> {
+  if (USE_MOCK) {
+    await initMockState();
+    return mockNutritionLogs;
+  }
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/progress/nutrition/logs?user_id=${userId}`, {
+    method: 'GET',
+    headers: { ...auth },
+  });
+  if (!res.ok) return [];
+  return res.json();
 }

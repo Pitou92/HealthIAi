@@ -1,5 +1,6 @@
 import os
 import base64
+import json
 import logging
 from openai import OpenAI
 from core.config import settings
@@ -14,8 +15,8 @@ class VisionService:
             base_url="https://openrouter.ai/api/v1",
             api_key=settings.OPENROUTER_KEY,
         )
-        self.primary_model = "google/gemma-3-27b-it" # Modèle top 1
-        self.fallback_model = "qwen/qwen2.5-vl-72b-instruct" # Modèle top 2
+        self.primary_model = "google/gemini-2.0-flash-001" # Modèle plus robuste pour la vision
+        self.fallback_model = "openai/gpt-4o-mini" # Fallback fiable
         self.vision_prompt = self._load_vision_prompt()
 
     def _load_vision_prompt(self):
@@ -62,8 +63,15 @@ class VisionService:
 
                 # Nettoyage rapide du markdown JSON si présent
                 content = clean_json_response(content)
+                data = json.loads(content)
+                
+                # Conversion explicite pour la sécurité
+                data['total_calories'] = int(data.get('total_calories', 0))
+                data['total_protein'] = float(data.get('total_protein', 0))
+                data['total_carbs'] = float(data.get('total_carbs', 0))
+                data['total_fat'] = float(data.get('total_fat', 0))
 
-                analysis = MealAnalysis.model_validate_json(content)
+                analysis = MealAnalysis.model_validate(data)
                 logger.info(f"Successfully analyzed meal image using {model}")
                 return analysis
             except Exception as e:

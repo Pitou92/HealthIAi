@@ -4,7 +4,6 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
-import { AnimatedBackground } from '@/components/animated-background';
 import { SP, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { removeToken } from '@/services/token';
@@ -14,13 +13,6 @@ const DAYS_FR = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 
 
 function todayFR() { return DAYS_FR[new Date().getDay()] ?? ''; }
 
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Bonjour';
-  if (h < 18) return 'Bon après-midi';
-  return 'Bonsoir';
-}
-
 function formatDate() {
   const d = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   return d.charAt(0).toUpperCase() + d.slice(1);
@@ -28,7 +20,16 @@ function formatDate() {
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { loading, error, recommendations: data, loadRecommendations, reset } = useAppStore();
+  const { 
+    loading, 
+    error, 
+    recommendations: data, 
+    dailyProgress: progress,
+    loadRecommendations, 
+    reset,
+    addWater,
+    updateWeight
+  } = useAppStore();
 
   useEffect(() => { if (!data) loadRecommendations(); }, []);
 
@@ -41,204 +42,85 @@ export default function DashboardScreen() {
   const today = todayFR();
   const todayWorkout = data?.sport?.weeklyPlan.find(d => d.day === today);
 
-  // No data and no loading: empty state
   const showEmpty = !data && !loading;
-  const noProfile = error === 'NO_PROFILE' || showEmpty;
-
-  if (noProfile) {
+  if (showEmpty || error === 'NO_PROFILE') {
     return (
       <View style={styles.root}>
-        <AnimatedBackground intensity="soft" />
         <SafeAreaView style={styles.emptySafe}>
-          <Text style={styles.emptyTitle}>Aucun plan actif</Text>
+          <Text style={styles.emptyTitle}>Prêt à commencer ?</Text>
           <Text style={styles.emptyText}>
-            Complétez l'onboarding pour générer votre plan IA personnalisé.
+            Générez votre plan personnalisé pour voir vos KPIs ici.
           </Text>
           <TouchableOpacity
             style={styles.emptyBtn}
             onPress={() => { reset(); router.replace(Routes.OnboardingStep1); }}>
-            <Text style={styles.emptyBtnText}>Commencer l'onboarding</Text>
+            <Text style={styles.emptyBtnText}>Créer mon plan</Text>
           </TouchableOpacity>
         </SafeAreaView>
       </View>
     );
   }
 
-  const totalMacroG = data
-    ? data.macros.proteins + data.macros.carbs + data.macros.fats
-    : 1;
-
   return (
     <View style={styles.root}>
       <AILoader visible={loading} />
 
-      {data && (
-        <SafeAreaView style={styles.safe}>
-          <AnimatedBackground intensity="soft" />
+      {data && progress && (
+        <SafeAreaView style={styles.safe} edges={['top']}>
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
             {/* ── Header ── */}
             <View style={styles.header}>
               <View>
-                <Text style={styles.greeting}>{getGreeting()}</Text>
                 <Text style={styles.date}>{formatDate()}</Text>
+                <Text style={styles.title}>Résumé</Text>
               </View>
-              <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                <Text style={styles.logoutText}>Déconnexion</Text>
+              <TouchableOpacity style={styles.profileCircle} onPress={() => router.push(Routes.Welcome)}>
+                <Text style={styles.profileInitial}>H</Text>
               </TouchableOpacity>
             </View>
 
-            {/* ── Score ── */}
-            <View style={styles.card}>
-              <View style={styles.scorRow}>
-                <View style={styles.scoreLeft}>
-                  <Text style={styles.label}>Score d'activité</Text>
-                  <View style={styles.scoreTagRow}>
-                    <View style={[
-                      styles.scoreTag,
-                      data.activityScore >= 80 ? styles.scoreTagGreen
-                      : data.activityScore >= 60 ? styles.scoreTagBlue
-                      : styles.scoreTagMuted,
-                    ]}>
-                      <Text style={[
-                        styles.scoreTagText,
-                        data.activityScore >= 80 ? styles.scoreTagTextGreen
-                        : data.activityScore >= 60 ? styles.scoreTagTextBlue
-                        : styles.scoreTagTextMuted,
-                      ]}>
-                        {data.activityScore >= 80 ? 'Excellent' : data.activityScore >= 60 ? 'Bien' : 'À améliorer'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <Text style={styles.scoreNumber}>
-                  {data.activityScore}
-                  <Text style={styles.scoreDenom}>/100</Text>
-                </Text>
-              </View>
-              <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, {
-                  width: `${data.activityScore}%` as any,
-                  backgroundColor: data.activityScore >= 80 ? SP.primary : data.activityScore >= 60 ? SP.secondary : SP.textMuted,
-                }]} />
-              </View>
-            </View>
-
-            {/* ── KPIs ── */}
-            <View style={styles.kpiRow}>
-              <View style={[styles.kpiCard, styles.kpiGreen]}>
-                <Text style={styles.kpiEmoji}>🔥</Text>
-                <Text style={styles.kpiVal}>{data.calories.target.toLocaleString('fr')}</Text>
-                <Text style={styles.kpiUnit}>kcal / jour</Text>
-              </View>
-              <View style={[styles.kpiCard, styles.kpiBlue]}>
-                <Text style={styles.kpiEmoji}>💧</Text>
-                <Text style={styles.kpiVal}>{(data.hydration.targetMl / 1000).toFixed(1)}</Text>
-                <Text style={styles.kpiUnit}>litres / jour</Text>
-              </View>
+            {/* ── Principaux KPIs (Apple Health Style) ── */}
+            <View style={styles.mainGrid}>
+              <KPICard 
+                title="Calories" 
+                value={progress.calories_consumed} 
+                target={progress.calories_target} 
+                unit="kcal" 
+                color="#FF3B30"
+                icon="🔥"
+              />
+              <KPICard 
+                title="Hydratation" 
+                value={progress.water_consumed_ml} 
+                target={progress.water_target_ml} 
+                unit="ml" 
+                color="#007AFF"
+                icon="💧"
+                onPress={() => addWater(250)}
+              />
             </View>
 
             {/* ── Macros ── */}
-            <View style={styles.card}>
-              <Text style={styles.label}>Macronutriments</Text>
-              <MacroRow
-                label="Protéines"
-                value={data.macros.proteins}
-                pct={data.macros.proteins / totalMacroG}
-                color={SP.primary}
-              />
-              <MacroRow
-                label="Glucides"
-                value={data.macros.carbs}
-                pct={data.macros.carbs / totalMacroG}
-                color={SP.secondary}
-              />
-              <MacroRow
-                label="Lipides"
-                value={data.macros.fats}
-                pct={data.macros.fats / totalMacroG}
-                color="#A78BFA"
-              />
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Macronutriments</Text>
+              <View style={styles.card}>
+                <MacroBar label="Protéines" current={progress.protein_consumed} target={progress.protein_target} color="#FF9500" />
+                <MacroBar label="Glucides" current={progress.carbs_consumed} target={progress.carbs_target} color="#34C759" />
+                <MacroBar label="Lipides" current={progress.fat_consumed} target={progress.fat_target} color="#AF52DE" />
+              </View>
             </View>
 
-            {/* ── Entraînement du jour ── */}
-            {todayWorkout && (
+            {/* ── Physique ── */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Physique</Text>
               <View style={styles.card}>
                 <View style={styles.rowBetween}>
-                  <Text style={styles.label}>Entraînement du jour</Text>
-                  <View style={todayWorkout.duration === 0 ? styles.chipMuted : styles.chipGreen}>
-                    <Text style={todayWorkout.duration === 0 ? styles.chipTextMuted : styles.chipTextGreen}>
-                      {todayWorkout.duration === 0 ? 'Repos' : `${todayWorkout.duration} min`}
-                    </Text>
-                  </View>
+                  <Text style={styles.bodyLabel}>Poids actuel</Text>
+                  <Text style={styles.bodyValue}>{progress.current_weight_kg ?? '--'} <Text style={styles.bodyUnit}>kg</Text></Text>
                 </View>
-                <Text style={styles.workoutName}>{todayWorkout.type}</Text>
-                {todayWorkout.duration > 0 && (
-                  <View style={styles.exerciseList}>
-                    {todayWorkout.exercises.map((ex, i) => (
-                      <View key={i} style={styles.exerciseRow}>
-                        <View style={styles.exerciseBullet} />
-                        <Text style={styles.exerciseText}>{ex}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
               </View>
-            )}
-
-            {/* ── Plan des repas ── */}
-            <View style={styles.card}>
-              <Text style={styles.label}>Plan des repas</Text>
-              {data.nutrition.meals.map((meal, i) => (
-                <View
-                  key={meal.id}
-                  style={[styles.mealItem, i < data.nutrition.meals.length - 1 && styles.mealDivider]}
-                >
-                  <View style={styles.mealHeader}>
-                    <View style={styles.mealMeta}>
-                      <Text style={styles.mealTime}>{meal.time}</Text>
-                      <Text style={styles.mealName}>{meal.name}</Text>
-                    </View>
-                    <Text style={styles.mealKcal}>{meal.calories} kcal</Text>
-                  </View>
-                  <Text style={styles.mealFoods}>{meal.items.join(' · ')}</Text>
-                </View>
-              ))}
             </View>
-
-            {/* ── Plan de la semaine ── */}
-            <View style={styles.card}>
-              <Text style={styles.label}>Semaine d'entraînement</Text>
-              {data.weeklyPlan.map((s) => {
-                const isToday = s.day === today;
-                const isRest = s.duration === 0;
-                return (
-                  <View key={s.day} style={[styles.weekRow, isToday && styles.weekRowToday]}>
-                    <View style={[styles.weekDot, isRest ? styles.weekDotRest : isToday ? styles.weekDotToday : styles.weekDotDefault]} />
-                    <Text style={[styles.weekDay, isToday && styles.weekDayToday, isRest && styles.weekDayRest]}>
-                      {s.day}
-                    </Text>
-                    <Text style={[styles.weekType, isRest && styles.weekTypeRest]}>{s.type}</Text>
-                    <Text style={styles.weekDuration}>
-                      {isRest ? 'Repos' : `${s.duration} min`}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-
-            {/* ── Conseils IA ── */}
-            {data.nutrition.tips.length > 0 && (
-              <View style={[styles.card, styles.tipsCard, { marginBottom: Spacing.six }]}>
-                <Text style={styles.label}>Conseils IA</Text>
-                {data.nutrition.tips.map((tip, i) => (
-                  <View key={i} style={styles.tipRow}>
-                    <Text style={styles.tipBullet}>✦</Text>
-                    <Text style={styles.tipText}>{tip}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
 
           </ScrollView>
         </SafeAreaView>
@@ -247,152 +129,115 @@ export default function DashboardScreen() {
   );
 }
 
-// ── MacroRow component ──────────────────────────────────────────────────────
+// ── Components ──────────────────────────────────────────────────────────────
 
-function MacroRow({ label, value, pct, color }: {
-  label: string; value: number; pct: number; color: string;
-}) {
+function KPICard({ title, value, target, unit, color, icon, onPress }: any) {
+  const progress = Math.min(value / target, 1);
   return (
-    <View style={m.row}>
-      <View style={m.labelRow}>
-        <Text style={m.label}>{label}</Text>
-        <Text style={m.value}>{value} g</Text>
+    <TouchableOpacity style={styles.kpiCard} onPress={onPress} activeOpacity={onPress ? 0.7 : 1}>
+      <View style={styles.kpiHeader}>
+        <Text style={styles.kpiIcon}>{icon}</Text>
+        <Text style={styles.kpiTitle}>{title}</Text>
       </View>
-      <View style={m.track}>
-        <View style={[m.fill, { width: `${Math.round(pct * 100)}%` as any, backgroundColor: color }]} />
+      <View style={styles.kpiValueContainer}>
+        <Text style={[styles.kpiValue, { color }]}>{value.toLocaleString()}</Text>
+        <Text style={styles.kpiTarget}>/ {target.toLocaleString()} {unit}</Text>
+      </View>
+      <View style={styles.kpiTrack}>
+        <View style={[styles.kpiFill, { width: `${progress * 100}%`, backgroundColor: color }]} />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function MacroBar({ label, current, target, color }: any) {
+  const progress = Math.min(current / target, 1);
+  return (
+    <View style={styles.macroRow}>
+      <View style={styles.rowBetween}>
+        <Text style={styles.macroLabel}>{label}</Text>
+        <Text style={styles.macroValue}>{current}g <Text style={styles.macroTarget}>/ {target}g</Text></Text>
+      </View>
+      <View style={styles.macroTrack}>
+        <View style={[styles.macroFill, { width: `${progress * 100}%`, backgroundColor: color }]} />
       </View>
     </View>
   );
 }
 
-const m = StyleSheet.create({
-  row: { gap: 6 },
-  labelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  label: { fontSize: 13, color: SP.textMuted },
-  value: { fontSize: 13, fontWeight: '600', color: SP.textDim },
-  track: { height: 6, backgroundColor: SP.bgInput, borderRadius: 999, overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: 999 },
-});
-
 // ── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: SP.bg },
-  safe: { flex: 1, backgroundColor: 'transparent' },
-  scroll: { paddingHorizontal: Spacing.four, paddingBottom: 120, gap: Spacing.three },
+  root: { flex: 1, backgroundColor: '#F2F2F7' }, // System Background
+  safe: { flex: 1 },
+  scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 24 },
 
-  // Empty state
-  emptySafe: {
-    flex: 1, alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: Spacing.five, gap: Spacing.three,
+  header: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    marginTop: 10,
   },
-  emptyTitle: { fontSize: 24, fontWeight: '800', color: SP.text, textAlign: 'center' },
-  emptyText: { fontSize: 15, color: SP.textMuted, textAlign: 'center', lineHeight: 22 },
-  emptyBtn: {
-    marginTop: Spacing.two,
-    backgroundColor: SP.primary, borderRadius: 14,
-    paddingHorizontal: Spacing.five, paddingVertical: Spacing.three,
+  date: { fontSize: 13, fontWeight: '600', color: '#8E8E93', textTransform: 'uppercase' },
+  title: { fontSize: 34, fontWeight: '800', color: '#000' },
+  profileCircle: { 
+    width: 40, height: 40, borderRadius: 20, 
+    backgroundColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center' 
   },
-  emptyBtnText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  profileInitial: { fontSize: 18, fontWeight: '600', color: '#8E8E93' },
 
-  // Header
-  header: {
-    paddingTop: Spacing.four,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+  mainGrid: { flexDirection: 'row', gap: 12 },
+  kpiCard: { 
+    flex: 1, backgroundColor: '#FFF', borderRadius: 12, 
+    padding: 16, gap: 12,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2
   },
-  greeting: { fontSize: 28, fontWeight: '800', color: SP.text, letterSpacing: -0.5 },
-  date: { fontSize: 14, color: SP.textMuted, marginTop: 2 },
-  logoutBtn: {
-    paddingHorizontal: 12, paddingVertical: 6,
-    borderRadius: 8, borderWidth: 1, borderColor: SP.borderDim,
-    marginTop: Spacing.two,
-  },
-  logoutText: { fontSize: 13, color: SP.textMuted, fontWeight: '500' },
+  kpiHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  kpiIcon: { fontSize: 16 },
+  kpiTitle: { fontSize: 15, fontWeight: '600', color: '#000' },
+  kpiValueContainer: { gap: 2 },
+  kpiValue: { fontSize: 24, fontWeight: '800' },
+  kpiTarget: { fontSize: 12, color: '#8E8E93', fontWeight: '500' },
+  kpiTrack: { height: 6, backgroundColor: '#E5E5EA', borderRadius: 3, overflow: 'hidden' },
+  kpiFill: { height: '100%', borderRadius: 3 },
 
-  // Base card
-  card: {
-    backgroundColor: SP.bgCard,
-    borderRadius: 16,
-    padding: Spacing.four,
-    gap: Spacing.three,
-    borderWidth: 1,
-    borderColor: SP.borderDim,
+  section: { gap: 10 },
+  sectionTitle: { fontSize: 20, fontWeight: '700', color: '#000', marginLeft: 4 },
+  card: { 
+    backgroundColor: '#FFF', borderRadius: 12, padding: 16, gap: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2
   },
-  label: { fontSize: 12, fontWeight: '600', color: SP.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 },
+
+  macroRow: { gap: 8 },
+  macroLabel: { fontSize: 15, fontWeight: '600', color: '#000' },
+  macroValue: { fontSize: 14, fontWeight: '700', color: '#000' },
+  macroTarget: { color: '#8E8E93', fontWeight: '500' },
+  macroTrack: { height: 8, backgroundColor: '#F2F2F7', borderRadius: 4, overflow: 'hidden' },
+  macroFill: { height: '100%', borderRadius: 4 },
+
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 
-  // Score card
-  scorRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  scoreLeft: { gap: Spacing.one },
-  scoreTagRow: { flexDirection: 'row' },
-  scoreTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  scoreTagGreen: { backgroundColor: 'rgba(34,197,94,0.15)' },
-  scoreTagBlue: { backgroundColor: 'rgba(59,130,246,0.15)' },
-  scoreTagMuted: { backgroundColor: SP.bgInput },
-  scoreTagText: { fontSize: 12, fontWeight: '600' },
-  scoreTagTextGreen: { color: SP.primary },
-  scoreTagTextBlue: { color: SP.secondary },
-  scoreTagTextMuted: { color: SP.textMuted },
-  scoreNumber: { fontSize: 52, fontWeight: '800', color: SP.text, lineHeight: 56 },
-  scoreDenom: { fontSize: 20, fontWeight: '500', color: SP.textMuted },
-  progressTrack: { height: 4, backgroundColor: SP.bgInput, borderRadius: 999, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 999 },
+  bodyLabel: { fontSize: 17, fontWeight: '500', color: '#000' },
+  bodyValue: { fontSize: 17, fontWeight: '700', color: '#000' },
+  bodyUnit: { color: '#8E8E93' },
 
-  // KPI row
-  kpiRow: { flexDirection: 'row', gap: Spacing.two },
-  kpiCard: {
-    flex: 1, borderRadius: 16, padding: Spacing.four, gap: 4,
-    borderWidth: 1, alignItems: 'flex-start',
-  },
-  kpiGreen: { backgroundColor: 'rgba(34,197,94,0.08)', borderColor: 'rgba(34,197,94,0.2)' },
-  kpiBlue: { backgroundColor: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.2)' },
-  kpiEmoji: { fontSize: 22, marginBottom: 4 },
-  kpiVal: { fontSize: 26, fontWeight: '800', color: SP.text },
-  kpiUnit: { fontSize: 12, color: SP.textMuted, fontWeight: '500' },
+  mealItem: { paddingVertical: 4, gap: 4 },
+  mealDivider: { borderBottomWidth: 0.5, borderBottomColor: '#E5E5EA', paddingBottom: 12 },
+  mealName: { fontSize: 17, fontWeight: '600', color: '#000' },
+  mealTime: { fontSize: 15, color: '#8E8E93' },
+  mealItems: { fontSize: 15, color: '#8E8E93', lineHeight: 20 },
 
-  // Chips
-  chipGreen: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, backgroundColor: 'rgba(34,197,94,0.12)' },
-  chipMuted: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999, backgroundColor: SP.bgInput },
-  chipTextGreen: { fontSize: 12, fontWeight: '600', color: SP.primary },
-  chipTextMuted: { fontSize: 12, fontWeight: '600', color: SP.textMuted },
+  workoutCard: { backgroundColor: '#34C759' },
+  workoutType: { fontSize: 18, fontWeight: '700', color: '#FFF' },
+  workoutDuration: { fontSize: 15, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
 
-  // Workout
-  workoutName: { fontSize: 18, fontWeight: '700', color: SP.text },
-  exerciseList: { gap: Spacing.one },
-  exerciseRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  exerciseBullet: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: SP.primary },
-  exerciseText: { fontSize: 14, color: SP.textDim, flex: 1 },
+  logoutBtn: { marginTop: 20, paddingVertical: 12, alignItems: 'center' },
+  logoutText: { color: '#FF3B30', fontSize: 16, fontWeight: '600' },
 
-  // Meals
-  mealItem: { gap: 4, paddingBottom: Spacing.two },
-  mealDivider: { borderBottomWidth: 1, borderBottomColor: SP.borderDim },
-  mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  mealMeta: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  mealTime: { fontSize: 12, fontWeight: '600', color: SP.textMuted, width: 38 },
-  mealName: { fontSize: 15, fontWeight: '700', color: SP.text },
-  mealKcal: { fontSize: 13, fontWeight: '700', color: SP.primary },
-  mealFoods: { fontSize: 13, color: SP.textMuted, paddingLeft: 48, lineHeight: 18 },
-
-  // Weekly plan
-  weekRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingVertical: 6, paddingHorizontal: 8, borderRadius: 10,
-  },
-  weekRowToday: { backgroundColor: 'rgba(34,197,94,0.07)' },
-  weekDot: { width: 8, height: 8, borderRadius: 4 },
-  weekDotDefault: { backgroundColor: SP.borderDim },
-  weekDotToday: { backgroundColor: SP.primary },
-  weekDotRest: { backgroundColor: SP.bgInput, borderWidth: 1, borderColor: SP.borderDim },
-  weekDay: { fontSize: 14, fontWeight: '600', color: SP.textDim, width: 88 },
-  weekDayToday: { color: SP.primary },
-  weekDayRest: { color: SP.textMuted },
-  weekType: { fontSize: 14, color: SP.textDim, flex: 1 },
-  weekTypeRest: { color: SP.textMuted, fontStyle: 'italic' },
-  weekDuration: { fontSize: 13, color: SP.textMuted },
-
-  // Tips
-  tipsCard: { borderColor: 'rgba(34,197,94,0.2)', backgroundColor: 'rgba(34,197,94,0.04)' },
-  tipRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  tipBullet: { fontSize: 11, color: SP.primary, marginTop: 3 },
-  tipText: { fontSize: 14, color: SP.textDim, flex: 1, lineHeight: 20 },
+  // Empty state
+  emptySafe: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, gap: 16 },
+  emptyTitle: { fontSize: 24, fontWeight: '800', color: '#000', textAlign: 'center' },
+  emptyText: { fontSize: 16, color: '#8E8E93', textAlign: 'center', lineHeight: 22 },
+  emptyBtn: { backgroundColor: '#34C759', paddingHorizontal: 32, paddingVertical: 16, borderRadius: 14 },
+  emptyBtnText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
 });

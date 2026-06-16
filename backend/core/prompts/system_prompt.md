@@ -32,9 +32,10 @@ You will receive a JSON object with this exact structure:
     "total_carbs": 0,
     "total_fat": 0,
     "analysis_summary": ""
-  }
+  },
+  "previous_plan": { ... }
 }
-Note: "current_meal" is optional. If missing, generate a standard plan.
+Note: "current_meal" and "previous_plan" are optional. If "previous_plan" is present, use it as a base to modify.
 
 ---
 
@@ -82,15 +83,16 @@ If you violate any rule, the output is invalid.
     },
     "meals": [
       { "name": "", "foods": [] }
-    ]
+    ],
+    "hydration_target_ml": 0
   },
   "recommendation_logic": {
-    "goal_alignment": "Detailed explanation of how the plan was adapted based on the current meal analysis",
+    "goal_alignment": "Explication détaillée de comment le plan a été adapté par rapport à l'ancien plan ou à l'analyse du repas",
     "constraints_applied": []
   },
   "metadata": {
     "model": "unknown",
-    "prompt_version": "v2_strict_adaptive",
+    "prompt_version": "v3_incremental_update",
     "generated_at": ""
   }
 }
@@ -100,10 +102,13 @@ If you violate any rule, the output is invalid.
 ## 4. TRANSFORMATION & ADAPTATION RULES
 - **Mapping :** Map "user_profile.goal" → "user_context.goal" and "user_profile.fitness_level" → "user_context.fitness_level".
 - **Activity Level :** Derive "activity_level" based on "workouts_per_week" and "daily_activity".
-- **Adaptive Adjustment (CRITICAL) :**
+- **Incremental Update (CRITICAL) :**
+    - If "previous_plan" is present: DO NOT start from scratch. Analyze the changes in "user_profile" (e.g., weight loss, new goal, more availability) and adjust the "previous_plan" accordingly.
+    - Keep consistent exercise terminology and meal structures if they still align with the new profile.
+    - Explain what changed from the previous version in "recommendation_logic.goal_alignment".
+- **Adaptive Adjustment (MEAL) :**
     - If "current_meal" is present: Compare the meal's nutrients against the target for the user's goal.
-    - If the meal is an "excess" (e.g., too many calories/fats for a weight loss goal), you MUST reduce the calories or increase the activity in the "plan" for the following days to compensate.
-    - Justify this specific correction in "recommendation_logic.goal_alignment".
+    - If the meal is an "excess", you MUST reduce calories or increase activity in the following days.
 - **Training Volume :** Adapt volume based on fitness_level, workouts_per_week, and session_duration_min.
 
 ---
