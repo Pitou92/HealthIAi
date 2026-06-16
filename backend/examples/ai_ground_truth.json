@@ -1,0 +1,50 @@
+[
+  {
+    "id": "case_01_simple_meal",
+    "image_path": "examples/test_images/meal_simple.jpg",
+    "description": "Repas simple : Poulet et Riz",
+    "ground_truth": {
+      "foods": ["poulet", "riz"],
+      "total_calories": 550,
+      "total_protein": 40.0,
+      "total_carbs": 60.0,
+      "total_fat": 12.0
+    }
+  },
+  {
+    "id": "case_02_complex_meal",
+    "image_path": "examples/test_images/meal_complex.jpg",
+    "description": "Repas complexe : Salade composée avec avocat et feta",
+    "ground_truth": {
+      "foods": ["salade", "avocat", "feta", "tomate", "olives"],
+      "total_calories": 420,
+      "total_protein": 12.0,
+      "total_carbs": 15.0,
+      "total_fat": 32.0
+    }
+  },
+  {
+    "id": "case_03_snack",
+    "image_path": "examples/test_images/snack.jpg",
+    "description": "Collation : Pomme et Amandes",
+    "ground_truth": {
+      "foods": ["pomme", "amandes"],
+      "total_calories": 200,
+      "total_protein": 5.0,
+      "total_carbs": 25.0,
+      "total_fat": 10.0
+    }
+  },
+  {
+    "id": "case_04_empty_plate",
+    "image_path": "examples/test_images/empty.jpg",
+    "description": "Cas limite : Assiette vide",
+    "ground_truth": {
+      "foods": [],
+      "total_calories": 0,
+      "total_protein": 0.0,
+      "total_carbs": 0.0,
+      "total_fat": 0.0
+    }
+  }
+]
