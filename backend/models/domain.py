@@ -63,6 +63,7 @@ class NutritionPlan(BaseModel):
     daily_calories: int
     macros: Macros
     meals: List[Meal]
+    hydration_target_ml: int = Field(2000, description="Target daily hydration in ml")
 
 class UserContext(BaseModel):
     goal: str
@@ -106,3 +107,44 @@ class MealAnalysis(BaseModel):
     total_carbs: float
     total_fat: float
     analysis_summary: str = Field(..., description="Bref résumé nutritionnel du repas")
+
+# --- TRACKING MODELS ---
+
+class HydrationLog(BaseModel):
+    user_id: int
+    amount_ml: int
+    timestamp: Optional[str] = None
+
+class WeightLog(BaseModel):
+    user_id: int
+    weight_kg: float
+    timestamp: Optional[str] = None
+
+class DailyProgress(BaseModel):
+    """Summary of daily progress compared to targets."""
+    user_id: int
+    date: str
+    calories_consumed: int = 0
+    calories_target: int
+    protein_consumed: int = 0
+    protein_target: int
+    carbs_consumed: int = 0
+    carbs_target: int
+    fat_consumed: int = 0
+    fat_target: int
+    water_consumed_ml: int = 0
+    water_target_ml: int
+    current_weight_kg: Optional[float] = None
+    workout_completed: bool = False
+    workout_name: Optional[str] = None
+
+class NutritionLog(BaseModel):
+    """Entry in the nutrition journal."""
+    user_id: int
+    name: str
+    calories: int
+    protein_g: float
+    carbs_g: float
+    fat_g: float
+    timestamp: Optional[str] = None
+    items: List[str] = []
