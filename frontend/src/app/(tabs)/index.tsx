@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
@@ -52,7 +52,7 @@ export default function DashboardScreen() {
             Générez votre plan personnalisé pour voir vos KPIs ici.
           </Text>
           <TouchableOpacity
-            style={styles.emptyBtn}
+            className="mt-2 rounded-2xl bg-primary px-8 py-4"
             onPress={() => { reset(); router.replace(Routes.OnboardingStep1); }}>
             <Text style={styles.emptyBtnText}>Créer mon plan</Text>
           </TouchableOpacity>
@@ -62,7 +62,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-bg">
       <AILoader visible={loading} />
 
       {data && progress && (
