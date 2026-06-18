@@ -5,18 +5,32 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // HealthIAi SP palette — mapped to Tailwind tokens
-        bg:           '#111827',
-        'bg-card':    '#1F2937',
-        'bg-input':   '#374151',
-        primary:      '#22C55E',
-        'primary-d':  '#16A34A',
-        secondary:    '#3B82F6',
-        fg:           '#F9FAFB',
-        'fg-dim':     '#D1D5DB',
-        muted:        '#9CA3AF',
-        purple:       '#A78BFA',
-        danger:       '#F87171',
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        primary: {
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
+          deep: 'var(--primary-deep)',
+        },
+        secondary: {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
+        },
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
+        },
+        card: {
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
+        },
       },
     },
   },

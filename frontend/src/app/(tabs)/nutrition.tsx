@@ -1,140 +1,160 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/app';
 import { useRouter } from 'expo-router';
 import { WaterModal } from '@/components/water-modal';
+import { Text } from '@/components/ui/text';
+import { Card } from '@/components/ui/card';
+import { CircularProgress } from '@/components/ui/circular-progress';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { SymbolView } from 'expo-symbols';
+import { Colors } from '@/constants/theme';
+import { useAppColorScheme } from '@/hooks/use-app-color-scheme';
 
 export default function NutritionScreen() {
   const router = useRouter();
   const [waterVisible, setWaterVisible] = useState(false);
   const { recommendations: data, dailyProgress: progress, nutritionLogs: logs, favoriteMeals } = useAppStore();
+  const { isDark } = useAppColorScheme();
 
   if (!data || !progress) return null;
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <WaterModal visible={waterVisible} onClose={() => setWaterVisible(false)} />
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Nutrition</Text>
+      <SafeAreaView className="flex-1" edges={['top']}>
+        <ScrollView contentContainerClassName="px-5 pb-10 gap-6" showsVerticalScrollIndicator={false}>
+          <Text variant="h1" className="mt-2">Nutrition</Text>
 
           {/* Actions principales */}
-          <View style={styles.actionGrid}>
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/nutrition/scan' as any)}>
-              <Text style={styles.actionIcon}>📸</Text>
-              <Text style={styles.actionTitle}>Scanner</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={[styles.actionCard, { backgroundColor: '#FF9500' }]} onPress={() => router.push('/nutrition/search' as any)}>
-              <Text style={styles.actionIcon}>🔍</Text>
-              <Text style={styles.actionTitle}>Rechercher</Text>
+          <View className="flex-row gap-3">
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              className="flex-1 bg-primary rounded-2xl p-4 items-center gap-2"
+              onPress={() => router.push('/nutrition/scan')}
+            >
+              <Text className="text-2xl">📸</Text>
+              <Text className="font-bold text-primary-foreground text-sm">Scanner</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.actionCard, { backgroundColor: '#007AFF' }]} onPress={() => setWaterVisible(true)}>
-              <Text style={styles.actionIcon}>💧</Text>
-              <Text style={styles.actionTitle}>Eau</Text>
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              className="flex-1 bg-orange-500 rounded-2xl p-4 items-center gap-2"
+              onPress={() => router.push('/nutrition/search')}
+            >
+              <Text className="text-2xl">🔍</Text>
+              <Text className="font-bold text-white text-sm">Rechercher</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              className="flex-1 bg-blue-500 rounded-2xl p-4 items-center gap-2"
+              onPress={() => setWaterVisible(true)}
+            >
+              <Text className="text-2xl">💧</Text>
+              <Text className="font-bold text-white text-sm">Eau</Text>
             </TouchableOpacity>
           </View>
 
           {/* Favoris */}
           {favoriteMeals && favoriteMeals.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Repas Favoris</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+            <View className="gap-3">
+              <Text variant="large">Repas Favoris</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-3">
                 {favoriteMeals.map((fav, i) => (
-                  <View key={i} style={styles.favCard}>
-                    <Text style={styles.favIcon}>⭐</Text>
-                    <View>
-                      <Text style={styles.favName}>{fav.name}</Text>
-                      <Text style={styles.favKcal}>{fav.calories} kcal</Text>
+                  <Card key={i} className="p-3 w-36 gap-2 border-none items-center">
+                    <Text className="text-2xl">⭐</Text>
+                    <View className="items-center">
+                      <Text className="font-semibold text-center text-sm" numberOfLines={1}>{fav.name}</Text>
+                      <Text variant="muted" className="text-xs">{fav.calories} kcal</Text>
                     </View>
-                  </View>
+                  </Card>
                 ))}
               </ScrollView>
             </View>
           )}
 
           {/* Résumé du jour */}
-          <View style={styles.section}>
-            <View style={styles.rowBetween}>
-              <Text style={styles.sectionTitle}>{"Aujourd'hui"}</Text>
-              <Text style={styles.kcalLeft}>{progress.calories_target - progress.calories_consumed} kcal restants</Text>
+          <View className="gap-3">
+            <View className="flex-row justify-between items-center">
+              <Text variant="large">Aujourd'hui</Text>
+              <Text variant="muted" className="font-semibold">{progress.calories_target - progress.calories_consumed} kcal restants</Text>
             </View>
-            <View style={styles.macroGrid}>
-              <MacroItem label="Protéines" current={progress.protein_consumed} target={progress.protein_target} color="#FF9500" />
-              <MacroItem label="Glucides" current={progress.carbs_consumed} target={progress.carbs_target} color="#34C759" />
-              <MacroItem label="Lipides" current={progress.fat_consumed} target={progress.fat_target} color="#AF52DE" />
+            <View className="flex-row gap-3">
+              <MacroItem label="Protéines" current={progress.protein_consumed} target={progress.protein_target} color="#F59E0B" />
+              <MacroItem label="Glucides" current={progress.carbs_consumed} target={progress.carbs_target} color="#10B981" />
+              <MacroItem label="Lipides" current={progress.fat_consumed} target={progress.fat_target} color="#8B5CF6" />
             </View>
           </View>
 
           {/* Hydratation */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Hydratation</Text>
-            <View style={styles.card}>
-              <View style={styles.rowBetween}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <Text style={{ fontSize: 24 }}>💧</Text>
+          <View className="gap-3">
+            <Text variant="large">Hydratation</Text>
+            <Card className="p-4 gap-4 border-none">
+              <View className="flex-row justify-between items-center">
+                <View className="flex-row items-center gap-3">
+                  <Text className="text-3xl">💧</Text>
                   <View>
-                    <Text style={{ fontSize: 17, fontWeight: '700', color: '#000' }}>
-                      {progress.water_consumed_ml} ml <Text style={{ color: '#8E8E93', fontWeight: '500', fontSize: 14 }}>/ {progress.water_target_ml} ml</Text>
+                    <Text className="font-bold text-lg">
+                      {progress.water_consumed_ml} ml <Text variant="muted" className="text-sm font-normal">/ {progress.water_target_ml} ml</Text>
                     </Text>
-                    <Text style={{ fontSize: 13, color: '#8E8E93', marginTop: 2 }}>
-                      Objectif quotidien d'hydratation
-                    </Text>
+                    <Text variant="muted" className="text-xs">Objectif quotidien d'hydratation</Text>
                   </View>
                 </View>
-                <TouchableOpacity
-                  style={{ backgroundColor: '#007AFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
-                  onPress={() => setWaterVisible(true)}
-                >
-                  <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 14 }}>Ajouter</Text>
-                </TouchableOpacity>
+                <Button 
+                  label="Ajouter" 
+                  size="sm" 
+                  onPress={() => setWaterVisible(true)} 
+                />
               </View>
               {/* Progress bar */}
-              <View style={{ height: 8, backgroundColor: '#F2F2F7', borderRadius: 4, overflow: 'hidden', marginTop: 8 }}>
-                <View style={{ height: '100%', width: `${Math.min(progress.water_consumed_ml / progress.water_target_ml, 1) * 100}%`, backgroundColor: '#007AFF' }} />
-              </View>
-            </View>
+              <Progress value={Math.min(progress.water_consumed_ml / progress.water_target_ml, 1) * 100} color="#3B82F6" className="h-2" />
+            </Card>
           </View>
 
           {/* Journal de bord */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Journal de bord</Text>
-            <View style={styles.card}>
-              {logs.length === 0 ? (
-                <Text style={styles.emptyText}>{"Aucun repas enregistré aujourd'hui."}</Text>
-              ) : (
-                logs.map((log, i) => (
-                  <View key={i} style={[styles.logItem, i < logs.length - 1 && styles.divider]}>
-                    <View style={styles.rowBetween}>
+          <View className="gap-3">
+            <Text variant="large">Journal de bord</Text>
+            {logs.length === 0 ? (
+              <Card className="items-center py-8 border-dashed bg-transparent">
+                <Text variant="muted">Aucun repas enregistré aujourd'hui.</Text>
+              </Card>
+            ) : (
+              <View className="gap-3">
+                {logs.map((log, i) => (
+                  <Card key={i} className="p-4 gap-2 border-none">
+                    <View className="flex-row justify-between items-start">
                       <View>
-                        <Text style={styles.logName}>{log.name}</Text>
-                        <Text style={styles.logTime}>{new Date(log.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</Text>
+                        <Text className="font-semibold text-lg">{log.name}</Text>
+                        <Text variant="muted" className="text-xs">{new Date(log.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</Text>
                       </View>
-                      <Text style={styles.logKcal}>{log.calories} <Text style={styles.logUnit}>kcal</Text></Text>
+                      <View className="items-end">
+                        <Text className="font-bold text-lg">{log.calories} <Text variant="muted" className="text-sm font-medium">kcal</Text></Text>
+                      </View>
                     </View>
-                    <Text style={styles.logItems}>{log.items.join(', ')}</Text>
-                  </View>
-                ))
-              )}
-            </View>
+                    <Text variant="muted" className="text-sm leading-relaxed">{log.items.join(', ')}</Text>
+                  </Card>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Recommandations IA */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Plan IA</Text>
-            <View style={styles.card}>
+          <View className="gap-3">
+            <Text variant="large">Plan IA</Text>
+            <Card className="p-0 overflow-hidden border-none">
               {data.nutrition.meals.map((meal, i) => (
-                <View key={i} style={[styles.mealItem, i < data.nutrition.meals.length - 1 && styles.divider]}>
-                  <View style={styles.rowBetween}>
-                    <Text style={styles.mealName}>{meal.name}</Text>
-                    <Text style={styles.mealKcal}>{meal.calories} kcal</Text>
+                <View key={i} className={`p-4 gap-2 ${i < data.nutrition.meals.length - 1 ? 'border-b border-border' : ''}`}>
+                  <View className="flex-row justify-between items-center">
+                    <Text className="font-semibold text-base">{meal.name}</Text>
+                    <Text className="font-bold text-secondary">{meal.calories} kcal</Text>
                   </View>
-                  <Text style={styles.mealItems}>{meal.items.join(', ')}</Text>
+                  <Text variant="muted" className="text-sm leading-relaxed">{meal.items.join(', ')}</Text>
                 </View>
               ))}
-            </View>
+            </Card>
           </View>
 
         </ScrollView>
@@ -144,71 +164,17 @@ export default function NutritionScreen() {
 }
 
 function MacroItem({ label, current, target, color }: any) {
-  const progress = Math.min(current / target, 1);
   return (
-    <View style={styles.macroItem}>
-      <Text style={styles.macroLabel}>{label}</Text>
-      <View style={styles.macroTrack}>
-        <View style={[styles.macroFill, { width: `${progress * 100}%`, backgroundColor: color }]} />
-      </View>
-      <Text style={styles.macroValue}>{Math.round(current)}<Text style={styles.macroTarget}>/{target}g</Text></Text>
-    </View>
+    <Card className="flex-1 p-3 items-center gap-2 border-none">
+      <Text className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</Text>
+      <CircularProgress 
+        value={current} 
+        max={target} 
+        size={60} 
+        strokeWidth={6} 
+        color={color} 
+      />
+      <Text className="font-bold text-sm">{Math.round(current)}<Text variant="muted" className="font-normal">/{target}g</Text></Text>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F2F2F7' },
-  safe: { flex: 1 },
-  scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 24 },
-  title: { fontSize: 34, fontWeight: '800', color: '#000', marginTop: 10 },
-  
-  actionGrid: { flexDirection: 'row', gap: 12, marginTop: 10 },
-  actionCard: { 
-    flex: 1, backgroundColor: '#007AFF', borderRadius: 16, padding: 16, 
-    alignItems: 'center', gap: 8 
-  },
-  actionIcon: { fontSize: 28 },
-  actionTitle: { fontSize: 16, fontWeight: '700', color: '#FFF' },
-
-  section: { gap: 12 },
-  sectionTitle: { fontSize: 20, fontWeight: '700', color: '#000' },
-  kcalLeft: { fontSize: 14, color: '#8E8E93', fontWeight: '600' },
-  
-  macroGrid: { flexDirection: 'row', gap: 12 },
-  macroItem: { flex: 1, backgroundColor: '#FFF', padding: 12, borderRadius: 12, gap: 6 },
-  macroLabel: { fontSize: 12, color: '#8E8E93', fontWeight: '600', textTransform: 'uppercase' },
-  macroTrack: { height: 4, backgroundColor: '#F2F2F7', borderRadius: 2, overflow: 'hidden' },
-  macroFill: { height: '100%' },
-  macroValue: { fontSize: 15, fontWeight: '700', color: '#000' },
-  macroTarget: { fontSize: 12, color: '#8E8E93', fontWeight: '500' },
-
-  card: { 
-    backgroundColor: '#FFF', borderRadius: 12, padding: 16, gap: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2
-  },
-  emptyText: { textAlign: 'center', color: '#8E8E93', fontSize: 15, paddingVertical: 10 },
-  
-  logItem: { paddingVertical: 4, gap: 4 },
-  logName: { fontSize: 17, fontWeight: '600', color: '#000' },
-  logTime: { fontSize: 13, color: '#8E8E93' },
-  logKcal: { fontSize: 17, fontWeight: '700', color: '#000' },
-  logUnit: { fontSize: 13, color: '#8E8E93', fontWeight: '500' },
-  logItems: { fontSize: 14, color: '#8E8E93', lineHeight: 18 },
-
-  mealItem: { paddingVertical: 4, gap: 4 },
-  mealName: { fontSize: 16, fontWeight: '600', color: '#000' },
-  mealKcal: { fontSize: 15, fontWeight: '700', color: '#007AFF' },
-  mealItems: { fontSize: 14, color: '#8E8E93', lineHeight: 18 },
-
-  favCard: { 
-    backgroundColor: '#FFF', borderRadius: 12, padding: 12, width: 140,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2,
-    gap: 6
-  },
-  favIcon: { fontSize: 20 },
-  favName: { fontSize: 15, fontWeight: '600', color: '#000' },
-  favKcal: { fontSize: 13, color: '#FF9500', fontWeight: '500' },
-
-  divider: { borderBottomWidth: 0.5, borderBottomColor: '#E5E5EA', paddingBottom: 12 },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-});
