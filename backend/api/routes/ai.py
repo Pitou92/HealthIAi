@@ -155,3 +155,38 @@ async def generate_smart_plan(
     except Exception as e:
         logger.error(f"Smart generation failed for user_id {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Smart generation failed: {str(e)}")
+
+@router.post("/adjust-plan", response_model=RecommendationPlan)
+async def adjust_plan(profile: UserProfile, user_id: int = Query(...)):
+    """
+    Adjusts an existing plan based on a new profile (e.g. weight change, goal change)
+    without regenerating the whole workout schedule if possible.
+    """
+    logger.info(f"Adjusting plan for user_id: {user_id}")
+    try:
+        previous_plan = None
+        if db_nosql is not None:
+            cursor = db_nosql.plans.find({"user_id": user_id}).sort("metadata.generated_at", -1).limit(1)
+            async for doc in cursor:
+                previous_plan = doc
+                if "_id" in previous_plan:
+                    del previous_plan["_id"]
+        
+        if not previous_plan:
+            # Fallback to full generation if no previous plan exists
+            user_json = profile.model_dump_json()
+            plan = await ai_service.generate_updated_recommendations(user_json, None)
+        else:
+            user_json = profile.model_dump_json()
+            # We reuse generate_updated_recommendations which passes the previous_plan to the AI.
+            # The AI prompt handles adapting the plan.
+            plan = await ai_service.generate_updated_recommendations(user_json, previous_plan)
+
+        plan.user_id = user_id
+        if db_nosql is not None:
+            await db_nosql.plans.insert_one(plan.model_dump())
+            
+        return plan
+    except Exception as e:
+        logger.error(f"Plan adjustment failed for user_id {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -148,3 +148,38 @@ class NutritionLog(BaseModel):
     fat_g: float
     timestamp: Optional[str] = None
     items: List[str] = []
+
+class WorkoutLog(BaseModel):
+    user_id: int
+    workout_name: str
+    duration_min: int
+    calories_burned: Optional[int] = None
+    rpe: Optional[int] = Field(None, description="Rate of Perceived Exertion (1-10)")
+    timestamp: Optional[str] = None
+
+class SavedMeal(BaseModel):
+    user_id: int
+    name: str
+    foods: List[FoodItem]
+    total_calories: int
+    total_protein: float
+    total_carbs: float
+    total_fat: float
+    created_at: Optional[str] = None
+
+class NutritionHistoryEntry(BaseModel):
+    date: str
+    calories: int
+    protein_g: float
+    carbs_g: float
+    fat_g: float
+
+class WeightHistoryEntry(BaseModel):
+    date: str
+    weight_kg: float
+
+class StreakInfo(BaseModel):
+    user_id: int
+    current_streak: int
+    last_activity_date: Optional[str] = None
+
