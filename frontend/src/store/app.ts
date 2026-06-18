@@ -12,8 +12,19 @@ import {
   analyzeMeal, 
   saveNutritionLog,
   fetchNutritionLogs,
+  fetchStreak,
+  fetchNutritionHistory,
+  fetchWeightHistory,
+  fetchProfile,
+  updateProfile,
+  adjustPlan,
+  getFavoriteMeals,
   type DailyProgress,
-  type NutritionLog
+  type NutritionLog,
+  type StreakInfo,
+  type NutritionHistoryEntry,
+  type WeightHistoryEntry,
+  type SavedMeal
 } from '@/services/api';
 import type { UserProfile } from '@/types/user';
 
@@ -24,6 +35,11 @@ interface AppStore {
   recommendations: Recommendations | null;
   dailyProgress: DailyProgress | null;
   nutritionLogs: NutritionLog[];
+  streak: StreakInfo | null;
+  nutritionHistory: NutritionHistoryEntry[];
+  weightHistory: WeightHistoryEntry[];
+  userProfile: any | null;
+  favoriteMeals: SavedMeal[];
   userId: number | null;
   // Actions
   submitAndFetch: (profile: UserProfile) => Promise<void>;
@@ -33,6 +49,8 @@ interface AppStore {
   updateWeight: (weight: number) => Promise<void>;
   scanMeal: (imageUri: string) => Promise<any>;
   confirmMeal: (analysis: any) => Promise<void>;
+  updateUserProfileAndAdjustPlan: (profile: UserProfile) => Promise<void>;
+  fetchHistoryAndProfile: () => Promise<void>;
   clearError: () => void;
   reset: () => void;
 }
@@ -46,6 +64,11 @@ export const useAppStore = create<AppStore>()(
       recommendations: null,
       dailyProgress: null,
       nutritionLogs: [],
+      streak: null,
+      nutritionHistory: [],
+      weightHistory: [],
+      userProfile: null,
+      favoriteMeals: [],
       userId: null,
 
       submitAndFetch: async (profile: UserProfile) => {
@@ -72,7 +95,11 @@ export const useAppStore = create<AppStore>()(
           const data = await fetchRecommendations(undefined, actualUserId);
           const progress = await fetchTodayProgress(actualUserId);
           const logs = await fetchNutritionLogs(actualUserId);
-          set({ userId: actualUserId, recommendations: data, dailyProgress: progress, nutritionLogs: logs, success: true });
+          const streak = await fetchStreak(actualUserId);
+          const profile = await fetchProfile(actualUserId).catch(() => null);
+          set({ userId: actualUserId, recommendations: data, dailyProgress: progress, nutritionLogs: logs, streak, userProfile: profile, success: true });
+          // Fetch the rest asynchronously
+          get().fetchHistoryAndProfile();
         } catch (e) {
           const msg = e instanceof Error ? e.message : 'Une erreur est survenue.';
           // If the error is NO_PLAN or NO_PROFILE, it means we need to do onboarding
@@ -93,6 +120,19 @@ export const useAppStore = create<AppStore>()(
           set({ dailyProgress: progress, nutritionLogs: logs });
         } catch (e) {
           console.error('Failed to fetch progress:', e);
+        }
+      },
+
+      fetchHistoryAndProfile: async () => {
+        const { userId } = get();
+        if (!userId) return;
+        try {
+          const nutritionHistory = await fetchNutritionHistory(userId);
+          const weightHistory = await fetchWeightHistory(userId);
+          const favoriteMeals = await getFavoriteMeals(userId);
+          set({ nutritionHistory, weightHistory, favoriteMeals });
+        } catch (e) {
+          console.error('Failed to fetch history:', e);
         }
       },
 
@@ -153,8 +193,23 @@ export const useAppStore = create<AppStore>()(
         }
       },
 
+      updateUserProfileAndAdjustPlan: async (profile: UserProfile) => {
+        const { userId } = get();
+        if (!userId) return;
+        set({ loading: true, error: null });
+        try {
+          await updateProfile(userId, profile);
+          const data = await adjustPlan(userId, profile);
+          set({ recommendations: data, userProfile: profile });
+        } catch (e) {
+          set({ error: e instanceof Error ? e.message : "Erreur lors de la mise à jour" });
+        } finally {
+          set({ loading: false });
+        }
+      },
+
       clearError: () => set({ error: null }),
-      reset: () => set({ loading: false, error: null, success: false, recommendations: null, dailyProgress: null, nutritionLogs: [], userId: null }),
+      reset: () => set({ loading: false, error: null, success: false, recommendations: null, dailyProgress: null, nutritionLogs: [], streak: null, nutritionHistory: [], weightHistory: [], userProfile: null, favoriteMeals: [], userId: null }),
     }),
     {
       name: 'healthai-app-storage',
@@ -163,7 +218,9 @@ export const useAppStore = create<AppStore>()(
         userId: state.userId, 
         recommendations: state.recommendations,
         dailyProgress: state.dailyProgress,
-        nutritionLogs: state.nutritionLogs 
+        nutritionLogs: state.nutritionLogs,
+        streak: state.streak,
+        userProfile: state.userProfile
       }),
     }
   )

@@ -39,7 +39,7 @@ export default function OnboardingStep3() {
     if (!canFinish) return;
 
     setStep3({ activityFrequency: frequency, activityType, activityLevel: level });
-    router.push(Routes.AILoading);
+    router.push('/ai-loading' as any);
   }
 
   return (

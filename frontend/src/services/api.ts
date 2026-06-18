@@ -208,6 +208,47 @@ export interface NutritionLog {
   items: string[];
 }
 
+export interface StreakInfo {
+  user_id: number;
+  current_streak: number;
+  last_activity_date: string | null;
+}
+
+export interface NutritionHistoryEntry {
+  date: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
+
+export interface WeightHistoryEntry {
+  date: string;
+  weight_kg: number;
+}
+
+export interface SavedMeal {
+  id?: string;
+  user_id: number;
+  name: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  items: string[];
+  created_at?: string;
+}
+
+export interface FoodItemSearchResult {
+  id: string;
+  name: string;
+  brand: string;
+  calories_100g: number;
+  protein_100g: number;
+  carbs_100g: number;
+  fat_100g: number;
+}
+
 // ─── Mock State ──────────────────────────────────────────────────────────────
 
 let mockNutritionLogs: NutritionLog[] = [];
@@ -467,4 +508,106 @@ export async function fetchNutritionLogs(userId: number): Promise<NutritionLog[]
   });
   if (!res.ok) return [];
   return res.json();
+}
+
+export async function fetchStreak(userId: number): Promise<StreakInfo> {
+  if (USE_MOCK) return { user_id: userId, current_streak: 3, last_activity_date: new Date().toISOString() };
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/progress/streak?user_id=${userId}`, { headers: { ...auth } });
+  if (!res.ok) return { user_id: userId, current_streak: 0, last_activity_date: null };
+  return res.json();
+}
+
+export async function fetchNutritionHistory(userId: number, days: number = 7): Promise<NutritionHistoryEntry[]> {
+  if (USE_MOCK) return [];
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/progress/history/nutrition?user_id=${userId}&days=${days}`, { headers: { ...auth } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchWeightHistory(userId: number, months: number = 3): Promise<WeightHistoryEntry[]> {
+  if (USE_MOCK) return [];
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/progress/history/weight?user_id=${userId}&months=${months}`, { headers: { ...auth } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ─── Nutrition Search & Favorites ─────────────────────────────────────────────
+
+export async function searchFood(query: string): Promise<FoodItemSearchResult[]> {
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Erreur lors de la recherche sur OpenFoodFacts");
+  const data = await res.json();
+  
+  return (data.products || []).map((p: any) => ({
+    id: p.code,
+    name: p.product_name || 'Inconnu',
+    brand: p.brands || '',
+    calories_100g: p.nutriments?.['energy-kcal_100g'] || 0,
+    protein_100g: p.nutriments?.proteins_100g || 0,
+    carbs_100g: p.nutriments?.carbohydrates_100g || 0,
+    fat_100g: p.nutriments?.fat_100g || 0,
+  })).filter((item: FoodItemSearchResult) => item.name !== 'Inconnu');
+}
+
+export async function saveFavoriteMeal(meal: Omit<SavedMeal, 'id' | 'created_at'>): Promise<SavedMeal> {
+  if (USE_MOCK) return { ...meal, id: 'mock', created_at: new Date().toISOString() };
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/nutrition/favorites`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...auth },
+    body: JSON.stringify(meal)
+  });
+  if (!res.ok) throw new Error("Erreur d'enregistrement du favori");
+  return res.json();
+}
+
+export async function getFavoriteMeals(userId: number): Promise<SavedMeal[]> {
+  if (USE_MOCK) return [];
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/nutrition/favorites?user_id=${userId}`, { headers: { ...auth } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ─── Profile Management ───────────────────────────────────────────────────────
+
+export async function fetchProfile(userId: number): Promise<any> {
+  if (USE_MOCK) {
+    return toBackendProfile({
+      age: 25, height: 175, weight: 70, sex: 'male', goal: 'fitness', 
+      activityFrequency: 3, activityType: 'mixed', activityLevel: 'moderate'
+    });
+  }
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/profile/?user_id=${userId}`, { headers: { ...auth } });
+  if (!res.ok) throw new Error("Erreur de profil");
+  return res.json();
+}
+
+export async function updateProfile(userId: number, profile: UserProfile): Promise<void> {
+  if (USE_MOCK) return;
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/profile/?user_id=${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...auth },
+    body: JSON.stringify(toBackendProfile(profile))
+  });
+  if (!res.ok) throw new Error("Mise à jour du profil échouée");
+}
+
+export async function adjustPlan(userId: number, profile: UserProfile): Promise<Recommendations> {
+  if (USE_MOCK) return mockRecommendations;
+  const auth = await bearer();
+  const res = await fetch(`${API_BASE_URL}/ai/adjust-plan?user_id=${userId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...auth },
+    body: JSON.stringify(toBackendProfile(profile))
+  });
+  if (!res.ok) throw new Error("Ajustement du plan échoué");
+  const bp: BackendPlan = await res.json();
+  return fromBackendPlan(bp, profile);
 }
