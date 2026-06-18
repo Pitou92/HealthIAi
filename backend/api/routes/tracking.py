@@ -92,6 +92,8 @@ async def get_today_progress(user_id: int = Query(...)):
             workout_name=workout_name
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching progress: {e}")
         raise HTTPException(status_code=500, detail=str(e))
