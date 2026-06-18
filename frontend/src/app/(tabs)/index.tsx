@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
@@ -25,6 +25,7 @@ export default function DashboardScreen() {
     error, 
     recommendations: data, 
     dailyProgress: progress,
+    streak,
     loadRecommendations, 
     reset,
     addWater,
@@ -72,7 +73,15 @@ export default function DashboardScreen() {
             {/* ── Header ── */}
             <View style={styles.header}>
               <View>
-                <Text style={styles.date}>{formatDate()}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={styles.date}>{formatDate()}</Text>
+                  {streak && streak.current_streak > 0 && (
+                    <View style={styles.streakBadge}>
+                      <Text style={styles.streakIcon}>🔥</Text>
+                      <Text style={styles.streakText}>{streak.current_streak} j</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.title}>Résumé</Text>
               </View>
               <TouchableOpacity style={styles.profileCircle} onPress={() => router.push(Routes.Welcome)}>
@@ -179,6 +188,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   date: { fontSize: 13, fontWeight: '600', color: '#8E8E93', textTransform: 'uppercase' },
+  streakBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FF950020', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, gap: 4 },
+  streakIcon: { fontSize: 12 },
+  streakText: { fontSize: 12, fontWeight: '700', color: '#FF9500' },
   title: { fontSize: 34, fontWeight: '800', color: '#000' },
   profileCircle: { 
     width: 40, height: 40, borderRadius: 20, 

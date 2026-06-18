@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 
 export default function NutritionScreen() {
   const router = useRouter();
-  const { recommendations: data, dailyProgress: progress, nutritionLogs: logs } = useAppStore();
+  const { recommendations: data, dailyProgress: progress, nutritionLogs: logs, favoriteMeals } = useAppStore();
 
   if (!data || !progress) return null;
 
@@ -15,19 +15,36 @@ export default function NutritionScreen() {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Nutrition</Text>
 
-          {/* Action principale */}
-          <View style={styles.scanSection}>
-            <TouchableOpacity style={styles.scanCard} onPress={() => router.push('/nutrition/scan')}>
-              <View style={styles.scanContent}>
-                <Text style={styles.scanIcon}>📸</Text>
-                <View>
-                  <Text style={styles.scanTitle}>Scanner un repas</Text>
-                  <Text style={styles.scanSubtitle}>Analyse IA instantanée</Text>
-                </View>
-              </View>
-              <Text style={styles.chevron}>›</Text>
+          {/* Actions principales */}
+          <View style={styles.actionGrid}>
+            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/nutrition/scan' as any)}>
+              <Text style={styles.actionIcon}>📸</Text>
+              <Text style={styles.actionTitle}>Scanner</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={[styles.actionCard, { backgroundColor: '#FF9500' }]} onPress={() => router.push('/nutrition/search' as any)}>
+              <Text style={styles.actionIcon}>🔍</Text>
+              <Text style={styles.actionTitle}>Rechercher</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Favoris */}
+          {favoriteMeals && favoriteMeals.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Repas Favoris</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+                {favoriteMeals.map((fav, i) => (
+                  <View key={i} style={styles.favCard}>
+                    <Text style={styles.favIcon}>⭐</Text>
+                    <View>
+                      <Text style={styles.favName}>{fav.name}</Text>
+                      <Text style={styles.favKcal}>{fav.calories} kcal</Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
           {/* Résumé du jour */}
           <View style={styles.section}>
@@ -106,16 +123,13 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 24 },
   title: { fontSize: 34, fontWeight: '800', color: '#000', marginTop: 10 },
   
-  scanSection: { marginTop: 10 },
-  scanCard: { 
-    backgroundColor: '#007AFF', borderRadius: 16, padding: 16, 
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' 
+  actionGrid: { flexDirection: 'row', gap: 12, marginTop: 10 },
+  actionCard: { 
+    flex: 1, backgroundColor: '#007AFF', borderRadius: 16, padding: 16, 
+    alignItems: 'center', gap: 8 
   },
-  scanContent: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  scanIcon: { fontSize: 32 },
-  scanTitle: { fontSize: 18, fontWeight: '700', color: '#FFF' },
-  scanSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)' },
-  chevron: { fontSize: 24, color: 'rgba(255,255,255,0.5)', fontWeight: '300' },
+  actionIcon: { fontSize: 28 },
+  actionTitle: { fontSize: 16, fontWeight: '700', color: '#FFF' },
 
   section: { gap: 12 },
   sectionTitle: { fontSize: 20, fontWeight: '700', color: '#000' },
@@ -146,6 +160,15 @@ const styles = StyleSheet.create({
   mealName: { fontSize: 16, fontWeight: '600', color: '#000' },
   mealKcal: { fontSize: 15, fontWeight: '700', color: '#007AFF' },
   mealItems: { fontSize: 14, color: '#8E8E93', lineHeight: 18 },
+
+  favCard: { 
+    backgroundColor: '#FFF', borderRadius: 12, padding: 12, width: 140,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2,
+    gap: 6
+  },
+  favIcon: { fontSize: 20 },
+  favName: { fontSize: 15, fontWeight: '600', color: '#000' },
+  favKcal: { fontSize: 13, color: '#FF9500', fontWeight: '500' },
 
   divider: { borderBottomWidth: 0.5, borderBottomColor: '#E5E5EA', paddingBottom: 12 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

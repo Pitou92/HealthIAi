@@ -11,3 +11,4 @@ motor
 cryptography
 passlib[bcrypt]
 python-jose[cryptography]
+httpx

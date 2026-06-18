@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   loadingView: { alignItems: 'center', marginTop: 20, gap: 20 },
   imagePreviewContainer: { width: '100%', aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden', position: 'relative' },
   imagePreview: { width: '100%', height: '100%' },
-  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
+  overlay: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
   loadingTitle: { fontSize: 20, fontWeight: '700' },
   loadingSubtitle: { fontSize: 15, color: '#8E8E93' },
 

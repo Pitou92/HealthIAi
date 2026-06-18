@@ -2,8 +2,9 @@ from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime
 from typing import Optional, List
 import logging
-from models.domain import DailyProgress, HydrationLog, WeightLog, RecommendationPlan, NutritionLog
+from models.domain import DailyProgress, HydrationLog, WeightLog, RecommendationPlan, NutritionLog, WorkoutLog, NutritionHistoryEntry, WeightHistoryEntry, StreakInfo
 from core.nosql_db import get_nosql_db
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -60,7 +61,19 @@ async def get_today_progress(user_id: int = Query(...)):
         if weight_doc:
             latest_weight = weight_doc.get("weight_kg")
 
-        # 4. Construct progress
+        # 4. Get workout logs
+        workout_completed = False
+        workout_name = None
+        workout_doc = await db_nosql.workout_logs.find_one({
+            "user_id": user_id,
+            "timestamp": {"$gte": today_iso}
+        }, sort=[("timestamp", -1)])
+        
+        if workout_doc:
+            workout_completed = True
+            workout_name = workout_doc.get("workout_name")
+
+        # 5. Construct progress
         return DailyProgress(
             user_id=user_id,
             date=today.strftime("%Y-%m-%d"),
@@ -75,8 +88,8 @@ async def get_today_progress(user_id: int = Query(...)):
             water_consumed_ml=water_consumed_ml,
             water_target_ml=plan.nutrition.hydration_target_ml,
             current_weight_kg=latest_weight,
-            workout_completed=False,
-            workout_name=None
+            workout_completed=workout_completed,
+            workout_name=workout_name
         )
 
     except HTTPException:
@@ -119,3 +132,119 @@ async def get_nutrition_logs(user_id: int = Query(...)):
     async for doc in cursor:
         logs.append(NutritionLog.model_validate(doc))
     return logs
+
+@router.post("/log/workout")
+async def log_workout(log: WorkoutLog):
+    """Log a completed workout."""
+    if not log.timestamp:
+        log.timestamp = datetime.now().isoformat()
+    await db_nosql.workout_logs.insert_one(log.model_dump())
+    return {"status": "success"}
+
+@router.get("/history/nutrition", response_model=List[NutritionHistoryEntry])
+async def get_nutrition_history(user_id: int = Query(...), days: int = Query(7)):
+    """Fetch nutrition history for the past X days."""
+    end_date = datetime.now()
+    start_date = (end_date - timedelta(days=days-1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    cursor = db_nosql.nutrition_logs.find({
+        "user_id": user_id,
+        "timestamp": {"$gte": start_date.isoformat()}
+    })
+    
+    # Aggregate by date
+    daily_data = {}
+    async for log in cursor:
+        try:
+            date_str = datetime.fromisoformat(log["timestamp"]).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+            
+        if date_str not in daily_data:
+            daily_data[date_str] = {"calories": 0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0}
+            
+        daily_data[date_str]["calories"] += log.get("calories", 0)
+        daily_data[date_str]["protein_g"] += log.get("protein_g", 0.0)
+        daily_data[date_str]["carbs_g"] += log.get("carbs_g", 0.0)
+        daily_data[date_str]["fat_g"] += log.get("fat_g", 0.0)
+        
+    history = []
+    # Fill missing days with zeros to ensure continuous chart
+    for i in range(days):
+        current_date = (end_date - timedelta(days=i)).strftime("%Y-%m-%d")
+        data = daily_data.get(current_date, {"calories": 0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0})
+        history.append(NutritionHistoryEntry(
+            date=current_date,
+            calories=int(data["calories"]),
+            protein_g=data["protein_g"],
+            carbs_g=data["carbs_g"],
+            fat_g=data["fat_g"]
+        ))
+        
+    # Sort chronological
+    history.sort(key=lambda x: x.date)
+    return history
+
+@router.get("/history/weight", response_model=List[WeightHistoryEntry])
+async def get_weight_history(user_id: int = Query(...), months: int = Query(3)):
+    """Fetch weight history for the past X months."""
+    end_date = datetime.now()
+    start_date = (end_date - timedelta(days=months*30)).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    cursor = db_nosql.weight_logs.find({
+        "user_id": user_id,
+        "timestamp": {"$gte": start_date.isoformat()}
+    }).sort("timestamp", 1)
+    
+    history = []
+    async for log in cursor:
+        try:
+            date_str = datetime.fromisoformat(log["timestamp"]).strftime("%Y-%m-%d")
+            history.append(WeightHistoryEntry(date=date_str, weight_kg=log["weight_kg"]))
+        except ValueError:
+            continue
+            
+    return history
+
+@router.get("/streak", response_model=StreakInfo)
+async def get_streak(user_id: int = Query(...)):
+    """Calculate user streak based on logins or logging activity."""
+    # Simplified streak: check nutrition logs per day
+    # We aggregate all unique dates where user logged a meal
+    cursor = db_nosql.nutrition_logs.find({"user_id": user_id}).sort("timestamp", -1)
+    
+    dates_logged = set()
+    async for log in cursor:
+        try:
+            date_str = datetime.fromisoformat(log["timestamp"]).strftime("%Y-%m-%d")
+            dates_logged.add(date_str)
+        except ValueError:
+            pass
+            
+    sorted_dates = sorted(list(dates_logged), reverse=True)
+    
+    current_streak = 0
+    today = datetime.now().strftime("%Y-%m-%d")
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    if not sorted_dates:
+        return StreakInfo(user_id=user_id, current_streak=0, last_activity_date=None)
+        
+    last_activity = sorted_dates[0]
+    
+    if last_activity == today or last_activity == yesterday:
+        current_streak = 1
+        check_date = datetime.strptime(last_activity, "%Y-%m-%d")
+        
+        for i in range(1, len(sorted_dates)):
+            prev_date = datetime.strptime(sorted_dates[i], "%Y-%m-%d")
+            diff = (check_date - prev_date).days
+            if diff == 1:
+                current_streak += 1
+                check_date = prev_date
+            elif diff == 0:
+                continue # Same day multiple logs
+            else:
+                break # Streak broken
+                
+    return StreakInfo(user_id=user_id, current_streak=current_streak, last_activity_date=last_activity)

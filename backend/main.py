@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.routes.ai import router as ai_router
 from api.routes.auth import router as auth_router
 from api.routes.tracking import router as tracking_router
+from api.routes.nutrition import router as nutrition_router
+from api.routes.profile import router as profile_router
 from core.config import settings
 from core.sql_db import engine, Base
 
@@ -50,6 +52,8 @@ async def startup():
 app.include_router(ai_router, prefix="/ai", tags=["AI"])
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(tracking_router, prefix="/progress", tags=["Tracking"])
+app.include_router(nutrition_router, prefix="/nutrition", tags=["Nutrition"])
+app.include_router(profile_router, prefix="/profile", tags=["Profile"])
 
 @app.get("/")
 async def root():
