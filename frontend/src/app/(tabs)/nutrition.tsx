@@ -1,16 +1,20 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '@/store/app';
 import { useRouter } from 'expo-router';
+import { WaterModal } from '@/components/water-modal';
 
 export default function NutritionScreen() {
   const router = useRouter();
+  const [waterVisible, setWaterVisible] = useState(false);
   const { recommendations: data, dailyProgress: progress, nutritionLogs: logs, favoriteMeals } = useAppStore();
 
   if (!data || !progress) return null;
 
   return (
     <View style={styles.root}>
+      <WaterModal visible={waterVisible} onClose={() => setWaterVisible(false)} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Nutrition</Text>
@@ -25,6 +29,11 @@ export default function NutritionScreen() {
             <TouchableOpacity style={[styles.actionCard, { backgroundColor: '#FF9500' }]} onPress={() => router.push('/nutrition/search' as any)}>
               <Text style={styles.actionIcon}>🔍</Text>
               <Text style={styles.actionTitle}>Rechercher</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.actionCard, { backgroundColor: '#007AFF' }]} onPress={() => setWaterVisible(true)}>
+              <Text style={styles.actionIcon}>💧</Text>
+              <Text style={styles.actionTitle}>Eau</Text>
             </TouchableOpacity>
           </View>
 
@@ -49,7 +58,7 @@ export default function NutritionScreen() {
           {/* Résumé du jour */}
           <View style={styles.section}>
             <View style={styles.rowBetween}>
-              <Text style={styles.sectionTitle}>Aujourd'hui</Text>
+              <Text style={styles.sectionTitle}>{"Aujourd'hui"}</Text>
               <Text style={styles.kcalLeft}>{progress.calories_target - progress.calories_consumed} kcal restants</Text>
             </View>
             <View style={styles.macroGrid}>
@@ -59,12 +68,42 @@ export default function NutritionScreen() {
             </View>
           </View>
 
+          {/* Hydratation */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hydratation</Text>
+            <View style={styles.card}>
+              <View style={styles.rowBetween}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Text style={{ fontSize: 24 }}>💧</Text>
+                  <View>
+                    <Text style={{ fontSize: 17, fontWeight: '700', color: '#000' }}>
+                      {progress.water_consumed_ml} ml <Text style={{ color: '#8E8E93', fontWeight: '500', fontSize: 14 }}>/ {progress.water_target_ml} ml</Text>
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#8E8E93', marginTop: 2 }}>
+                      Objectif quotidien d'hydratation
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={{ backgroundColor: '#007AFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
+                  onPress={() => setWaterVisible(true)}
+                >
+                  <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 14 }}>Ajouter</Text>
+                </TouchableOpacity>
+              </View>
+              {/* Progress bar */}
+              <View style={{ height: 8, backgroundColor: '#F2F2F7', borderRadius: 4, overflow: 'hidden', marginTop: 8 }}>
+                <View style={{ height: '100%', width: `${Math.min(progress.water_consumed_ml / progress.water_target_ml, 1) * 100}%`, backgroundColor: '#007AFF' }} />
+              </View>
+            </View>
+          </View>
+
           {/* Journal de bord */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Journal de bord</Text>
             <View style={styles.card}>
               {logs.length === 0 ? (
-                <Text style={styles.emptyText}>Aucun repas enregistré aujourd'hui.</Text>
+                <Text style={styles.emptyText}>{"Aucun repas enregistré aujourd'hui."}</Text>
               ) : (
                 logs.map((log, i) => (
                   <View key={i} style={[styles.logItem, i < logs.length - 1 && styles.divider]}>
