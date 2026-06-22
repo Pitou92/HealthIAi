@@ -4,12 +4,15 @@ from sqlalchemy.future import select
 from core.sql_db import get_db
 from models.sql_models import User
 from models.domain import UserProfile
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get("/", response_model=UserProfile)
 async def get_profile(user_id: int, db: AsyncSession = Depends(get_db)):
     """Fetch user profile details from MySQL."""
+    logger.info(f"Fetching profile for user_id: {user_id}")
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     
@@ -34,10 +37,12 @@ async def get_profile(user_id: int, db: AsyncSession = Depends(get_db)):
 @router.put("/")
 async def update_profile(user_id: int, profile: UserProfile, db: AsyncSession = Depends(get_db)):
     """Update user profile details in MySQL."""
+    logger.info(f"Updating profile for user_id: {user_id}")
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     
     if not user:
+        logger.warning(f"Profile update failed: User {user_id} not found")
         raise HTTPException(status_code=404, detail="User not found")
         
     user.goal = profile.goal
@@ -50,4 +55,5 @@ async def update_profile(user_id: int, profile: UserProfile, db: AsyncSession = 
     user.activity_type = profile.daily_activity
     
     await db.commit()
+    logger.info(f"Profile updated successfully for user_id: {user_id}")
     return {"status": "success", "message": "Profile updated"}

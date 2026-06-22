@@ -100,6 +100,7 @@ async def get_today_progress(user_id: int = Query(...)):
 
 @router.post("/log/hydration")
 async def log_hydration(log: HydrationLog):
+    logger.info(f"Logging hydration for user {log.user_id}: {log.amount_ml}ml")
     if not log.timestamp:
         log.timestamp = datetime.now().isoformat()
     await db_nosql.hydration_logs.insert_one(log.model_dump())
@@ -107,6 +108,7 @@ async def log_hydration(log: HydrationLog):
 
 @router.post("/log/weight")
 async def log_weight(log: WeightLog):
+    logger.info(f"Logging weight for user {log.user_id}: {log.weight_kg}kg")
     if not log.timestamp:
         log.timestamp = datetime.now().isoformat()
     await db_nosql.weight_logs.insert_one(log.model_dump())
@@ -115,6 +117,7 @@ async def log_weight(log: WeightLog):
 @router.post("/log/nutrition")
 async def log_nutrition_meal(log: NutritionLog):
     """Save a meal entry to the nutrition journal."""
+    logger.info(f"Logging nutrition meal for user {log.user_id}: {log.name} ({log.calories} kcal)")
     if not log.timestamp:
         log.timestamp = datetime.now().isoformat()
     await db_nosql.nutrition_logs.insert_one(log.model_dump())
@@ -136,6 +139,7 @@ async def get_nutrition_logs(user_id: int = Query(...)):
 @router.post("/log/workout")
 async def log_workout(log: WorkoutLog):
     """Log a completed workout."""
+    logger.info(f"Logging workout for user {log.user_id}: {log.workout_name}")
     if not log.timestamp:
         log.timestamp = datetime.now().isoformat()
     await db_nosql.workout_logs.insert_one(log.model_dump())
