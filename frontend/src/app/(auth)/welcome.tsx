@@ -2,8 +2,7 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedBackground } from '@/components/animated-background';
-import { SP, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 
 export default function WelcomeScreen() {
@@ -11,16 +10,14 @@ export default function WelcomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimatedBackground />
-
       <View style={styles.hero}>
         <View style={styles.logo}>
           <Text style={styles.logoChar}>H</Text>
         </View>
 
         <View style={styles.titleRow}>
-          <Text style={styles.titleGreen}>Health</Text>
-          <Text style={styles.titleWhite}>IAi</Text>
+          <Text style={styles.titleBlue}>Health</Text>
+          <Text style={styles.titleDark}>IAi</Text>
         </View>
 
         <Text style={styles.subtitle}>
@@ -53,7 +50,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SP.bg,
+    backgroundColor: '#F2F2F7',
   },
 
   hero: {
@@ -68,25 +65,25 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 30,
-    backgroundColor: SP.primary,
+    backgroundColor: '#007AFF',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: SP.primary,
+    shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.45,
-    shadowRadius: 24,
-    elevation: 12,
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
     marginBottom: Spacing.two,
   },
   logoChar: { fontSize: 52, fontWeight: '800', color: '#fff' },
 
   titleRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  titleGreen: { fontSize: 46, fontWeight: '800', color: SP.primary, letterSpacing: -1 },
-  titleWhite: { fontSize: 46, fontWeight: '800', color: SP.text, letterSpacing: -1 },
+  titleBlue: { fontSize: 46, fontWeight: '800', color: '#007AFF', letterSpacing: -1 },
+  titleDark: { fontSize: 46, fontWeight: '800', color: '#000', letterSpacing: -1 },
 
   subtitle: {
     fontSize: 16,
-    color: SP.textDim,
+    color: '#8E8E93',
     textAlign: 'center',
     lineHeight: 26,
   },
@@ -99,15 +96,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    backgroundColor: 'rgba(0,122,255,0.08)',
     borderWidth: 1,
-    borderColor: SP.border,
+    borderColor: 'rgba(0,122,255,0.2)',
   },
-  pillDot: { fontSize: 8, color: SP.primary },
-  pillText: { fontSize: 12, fontWeight: '600', color: SP.textDim },
+  pillDot: { fontSize: 8, color: '#007AFF' },
+  pillText: { fontSize: 12, fontWeight: '600', color: '#007AFF' },
 
   bottomCard: {
-    backgroundColor: SP.bgCard,
+    backgroundColor: '#FFF',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingHorizontal: Spacing.four,
@@ -115,22 +112,22 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.five,
     gap: Spacing.two,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 8,
   },
 
   primaryBtn: {
-    backgroundColor: SP.primary,
+    backgroundColor: '#007AFF',
     borderRadius: 16,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: SP.primary,
+    shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   primaryBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
 
@@ -139,7 +136,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: SP.border,
+    borderColor: '#E5E5EA',
   },
-  ghostBtnText: { fontSize: 17, fontWeight: '600', color: SP.primary },
+  ghostBtnText: { fontSize: 17, fontWeight: '600', color: '#007AFF' },
 });

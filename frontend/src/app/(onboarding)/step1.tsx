@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedBackground } from '@/components/animated-background';
-import { SP, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { useOnboardingStore } from '@/store/onboarding';
 import type { Sex } from '@/types/user';
@@ -43,8 +42,6 @@ export default function OnboardingStep1() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimatedBackground intensity="soft" />
-
       <View style={styles.progress}>
         <View style={[styles.dot, styles.dotActive]} />
         <View style={[styles.dot, styles.dotInactive]} />
@@ -62,7 +59,7 @@ export default function OnboardingStep1() {
               <TextInput
                 style={styles.input}
                 placeholder="28"
-                placeholderTextColor={SP.textMuted}
+                placeholderTextColor="#8E8E93"
                 keyboardType="numeric"
                 value={age}
                 onChangeText={(v) => { setAge(v); setError(null); }}
@@ -73,7 +70,7 @@ export default function OnboardingStep1() {
               <TextInput
                 style={styles.input}
                 placeholder="175"
-                placeholderTextColor={SP.textMuted}
+                placeholderTextColor="#8E8E93"
                 keyboardType="numeric"
                 value={height}
                 onChangeText={(v) => { setHeight(v); setError(null); }}
@@ -86,7 +83,7 @@ export default function OnboardingStep1() {
             <TextInput
               style={styles.input}
               placeholder="70"
-              placeholderTextColor={SP.textMuted}
+              placeholderTextColor="#8E8E93"
               keyboardType="decimal-pad"
               value={weight}
               onChangeText={(v) => { setWeight(v); setError(null); }}
@@ -125,63 +122,65 @@ export default function OnboardingStep1() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SP.bg,
-    paddingHorizontal: Spacing.four,
+    backgroundColor: '#F2F2F7',
+    paddingHorizontal: 20,
     paddingVertical: Spacing.three,
   },
 
-  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
+  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.four },
   dot: { height: 5, flex: 1, borderRadius: 3 },
-  dotActive: { backgroundColor: SP.primary },
-  dotInactive: { backgroundColor: 'rgba(34, 197, 94, 0.2)' },
+  dotActive: { backgroundColor: '#007AFF' },
+  dotInactive: { backgroundColor: '#E5E5EA' },
 
   content: { flex: 1, gap: Spacing.three },
-  eyebrow: { fontSize: 12, fontWeight: '700', color: SP.primary, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 32, fontWeight: '800', color: SP.text, letterSpacing: -0.5, lineHeight: 38 },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 34, fontWeight: '800', color: '#000', letterSpacing: -0.5, lineHeight: 40 },
 
   form: { gap: Spacing.three, marginTop: Spacing.one },
   row: { flexDirection: 'row', gap: Spacing.two },
   halfField: { flex: 1, gap: Spacing.one },
   fullField: { gap: Spacing.one },
-  label: { fontSize: 13, fontWeight: '600', color: SP.textDim },
+  label: { fontSize: 13, fontWeight: '600', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.3 },
 
   input: {
-    backgroundColor: SP.bgInput,
-    borderRadius: 12,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
     paddingHorizontal: Spacing.three,
     paddingVertical: 14,
     fontSize: 16,
-    color: SP.text,
-    borderWidth: 1,
-    borderColor: SP.borderDim,
+    color: '#000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
 
   chips: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
   chip: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: SP.bgCard,
-    borderWidth: 1.5,
-    borderColor: SP.borderDim,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  chipActive: { backgroundColor: 'rgba(34, 197, 94, 0.12)', borderColor: SP.primary },
-  chipText: { fontSize: 15, fontWeight: '600', color: SP.textDim },
-  chipTextActive: { color: SP.primary },
+  chipActive: { backgroundColor: 'rgba(0,122,255,0.1)' },
+  chipText: { fontSize: 15, fontWeight: '600', color: '#8E8E93' },
+  chipTextActive: { color: '#007AFF' },
 
-  error: { fontSize: 13, color: '#F87171', textAlign: 'center' },
+  error: { fontSize: 13, color: '#FF3B30', textAlign: 'center' },
 
   nextBtn: {
-    backgroundColor: SP.primary,
-    borderRadius: 16,
+    backgroundColor: '#007AFF',
+    borderRadius: 14,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: SP.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
+    marginTop: Spacing.two,
   },
   nextBtnDisabled: { opacity: 0.38 },
   nextBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },

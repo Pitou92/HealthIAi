@@ -63,7 +63,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View className="flex-1 bg-bg">
+    <View style={styles.root}>
       <AILoader visible={loading} />
 
       {data && progress && (

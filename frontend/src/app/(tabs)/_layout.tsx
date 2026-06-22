@@ -1,20 +1,18 @@
 import { Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
-import { SP } from '@/constants/theme';
-
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: SP.bgCard,
-          borderTopColor: SP.border,
-          borderTopWidth: 1,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#E5E5EA',
+          borderTopWidth: 0.5,
         },
-        tabBarActiveTintColor: SP.primary,
-        tabBarInactiveTintColor: SP.textMuted,
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#8E8E93',
       }}>
       <Tabs.Screen
         name="index"
