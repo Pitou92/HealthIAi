@@ -7,6 +7,14 @@ import { useAppStore } from '@/store/app';
 
 export default function SearchScreen() {
   const router = useRouter();
+
+  function safeGoBack() {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/nutrition');
+    }
+  }
   const { userId, fetchProgress } = useAppStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<FoodItemSearchResult[]>([]);
@@ -42,7 +50,7 @@ export default function SearchScreen() {
         items: [`${food.name} (100g)`]
       });
       await fetchProgress(userId);
-      router.back();
+      safeGoBack();
     } catch (e) {
       setError("Impossible d'ajouter l'aliment.");
     } finally {
@@ -54,7 +62,7 @@ export default function SearchScreen() {
     <View style={styles.root}>
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity onPress={safeGoBack} style={styles.backBtn}>
             <Text style={styles.backIcon}>‹</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Rechercher</Text>
@@ -103,7 +111,7 @@ export default function SearchScreen() {
             )}
             ListEmptyComponent={
               query.length >= 2 && !loading && results.length === 0 ? (
-                <Text style={styles.emptyText}>Aucun résultat pour "{query}".</Text>
+                <Text style={styles.emptyText}>{`Aucun résultat pour "${query}".`}</Text>
               ) : null
             }
           />
