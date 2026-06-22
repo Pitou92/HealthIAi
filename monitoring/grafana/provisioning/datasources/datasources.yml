@@ -1,0 +1,39 @@
+apiVersion: 1
+
+datasources:
+  # Prometheus metrics
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    jsonData:
+      httpMethod: POST
+
+  # Loki logs
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    jsonData:
+      # Link Loki logs directly to Tempo traces
+      derivedFields:
+        - datasourceUid: tempo
+          matcherRegex: "trace_id=(\\w+)"
+          name: TraceID
+          url: "$${__value.raw}"
+
+  # Tempo traces
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    jsonData:
+      httpMethod: GET
+      # Connect Tempo traces back to Loki logs
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: loki

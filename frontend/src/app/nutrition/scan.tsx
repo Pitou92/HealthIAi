@@ -10,6 +10,14 @@ type ScanStep = 'pick' | 'uploading' | 'analyzing' | 'result';
 export default function ScanMealScreen() {
   const router = useRouter();
   const scanMeal = useAppStore(s => s.scanMeal);
+
+  function safeGoBack() {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/nutrition');
+    }
+  }
   
   const [step, setStep] = useState<ScanStep>('pick');
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -72,7 +80,7 @@ export default function ScanMealScreen() {
       <SafeAreaView style={styles.safe} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={safeGoBack}>
             <Text style={styles.backBtn}>Annuler</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Analyse Nutritionnelle</Text>
@@ -105,7 +113,7 @@ export default function ScanMealScreen() {
               <View style={styles.iconContainer}>
                 <Text style={styles.mainIcon}>🥗</Text>
               </View>
-              <Text style={styles.title}>Qu'avez-vous mangé ?</Text>
+              <Text style={styles.title}>{"Qu'avez-vous mangé ?"}</Text>
               <Text style={styles.subtitle}>Notre IA va identifier les aliments et calculer les calories pour vous.</Text>
               
               <TouchableOpacity style={styles.mainBtn} onPress={pickImage}>
@@ -176,7 +184,7 @@ export default function ScanMealScreen() {
                 style={styles.confirmBtn} 
                 onPress={async () => {
                   await useAppStore.getState().confirmMeal(analysis);
-                  router.back();
+                  safeGoBack();
                 }}
               >
                 <Text style={styles.confirmBtnText}>Ajouter à mon journal</Text>

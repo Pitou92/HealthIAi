@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
         </View>
 
         <Text style={styles.subtitle}>
-          Votre santé, guidée par{'\n'}l'intelligence artificielle
+          {"Votre santé, guidée par\nl'intelligence artificielle"}
         </Text>
 
         <View style={styles.pill}>
@@ -40,7 +40,7 @@ export default function WelcomeScreen() {
         <TouchableOpacity
           style={styles.ghostBtn}
           onPress={() => router.push(Routes.Login)}>
-          <Text style={styles.ghostBtnText}>J'ai déjà un compte</Text>
+          <Text style={styles.ghostBtnText}>{"J'ai déjà un compte"}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

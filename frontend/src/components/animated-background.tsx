@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
 interface Props {
@@ -6,12 +6,12 @@ interface Props {
 }
 
 export function AnimatedBackground({ intensity = 'normal' }: Props) {
-  const b1Scale = useRef(new Animated.Value(1)).current;
-  const b2Scale = useRef(new Animated.Value(1)).current;
-  const b3Scale = useRef(new Animated.Value(1)).current;
-  const b1Op = useRef(new Animated.Value(0.7)).current;
-  const b2Op = useRef(new Animated.Value(0.5)).current;
-  const b3Op = useRef(new Animated.Value(0.6)).current;
+  const [b1Scale] = useState(() => new Animated.Value(1));
+  const [b2Scale] = useState(() => new Animated.Value(1));
+  const [b3Scale] = useState(() => new Animated.Value(1));
+  const [b1Op] = useState(() => new Animated.Value(0.7));
+  const [b2Op] = useState(() => new Animated.Value(0.5));
+  const [b3Op] = useState(() => new Animated.Value(0.6));
 
   const factor = intensity === 'soft' ? 0.5 : 1;
 
@@ -47,7 +47,7 @@ export function AnimatedBackground({ intensity = 'normal' }: Props) {
     add(b3Scale, b3Op, 1.22, 0.5, 0.78, 3400);
 
     return () => loops.forEach((l) => l.stop());
-  }, []);
+  }, [b1Scale, b1Op, b2Scale, b2Op, b3Scale, b3Op, factor]);
 
   return (
     <View style={styles.fill} pointerEvents="none">

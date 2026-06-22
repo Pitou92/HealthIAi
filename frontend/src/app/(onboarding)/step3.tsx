@@ -69,7 +69,7 @@ export default function OnboardingStep3() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Type d'activité</Text>
+          <Text style={styles.label}>{"Type d'activité"}</Text>
           <View style={styles.grid}>
             {ACTIVITY_TYPES.map((t) => (
               <TouchableOpacity

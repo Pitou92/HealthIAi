@@ -8,6 +8,7 @@ export const Routes = {
   AILoading: '/ai-loading',
   Dashboard: '/(tabs)',
   Explore: '/(tabs)/explore',
+  Logs: '/logs',
 } as const;
 
 export type AppRoute = (typeof Routes)[keyof typeof Routes];

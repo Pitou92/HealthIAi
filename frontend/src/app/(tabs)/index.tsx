@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AILoader } from '@/components/ai-loader';
+import { WaterModal } from '@/components/water-modal';
 import { SP, Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { removeToken } from '@/services/token';
@@ -20,6 +21,7 @@ function formatDate() {
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const [waterVisible, setWaterVisible] = useState(false);
   const { 
     loading, 
     error, 
@@ -28,8 +30,8 @@ export default function DashboardScreen() {
     streak,
     loadRecommendations, 
     reset,
-    addWater,
-    updateWeight
+    updateWeight,
+    weightUnit
   } = useAppStore();
 
   useEffect(() => { if (!data) loadRecommendations(); }, []);
@@ -65,6 +67,7 @@ export default function DashboardScreen() {
   return (
     <View style={styles.root}>
       <AILoader visible={loading} />
+      <WaterModal visible={waterVisible} onClose={() => setWaterVisible(false)} />
 
       {data && progress && (
         <SafeAreaView style={styles.safe} edges={['top']}>
@@ -106,7 +109,7 @@ export default function DashboardScreen() {
                 unit="ml" 
                 color="#007AFF"
                 icon="💧"
-                onPress={() => addWater(250)}
+                onPress={() => setWaterVisible(true)}
               />
             </View>
 
@@ -126,7 +129,13 @@ export default function DashboardScreen() {
               <View style={styles.card}>
                 <View style={styles.rowBetween}>
                   <Text style={styles.bodyLabel}>Poids actuel</Text>
-                  <Text style={styles.bodyValue}>{progress.current_weight_kg ?? '--'} <Text style={styles.bodyUnit}>kg</Text></Text>
+                  <Text style={styles.bodyValue}>
+                    {progress.current_weight_kg 
+                      ? (weightUnit === 'lbs' 
+                        ? `${Math.round(progress.current_weight_kg * 2.20462 * 10) / 10} lbs` 
+                        : `${progress.current_weight_kg} kg`)
+                      : '--'}
+                  </Text>
                 </View>
               </View>
             </View>

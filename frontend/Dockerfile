@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libnspr4 \
     libasound2 \
+    libdbus-1-3 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

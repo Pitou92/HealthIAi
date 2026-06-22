@@ -7,14 +7,15 @@ from api.routes.auth import router as auth_router
 from api.routes.tracking import router as tracking_router
 from api.routes.nutrition import router as nutrition_router
 from api.routes.profile import router as profile_router
+from api.routes.logs import router as logs_router
 from core.config import settings
 from core.sql_db import engine, Base
+from core.logging_config import setup_logging
+from core.middleware import RequestLoggingMiddleware
+from core.telemetry import setup_telemetry
 
 # Setup logging
-logging.basicConfig(
-    level=settings.LOG_LEVEL,
-    format=settings.LOG_FORMAT,
-)
+setup_logging()
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -32,12 +33,16 @@ app = FastAPI(
     version=settings.VERSION
 )
 
+# Setup Telemetry (Metrics & Traces)
+setup_telemetry(app)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RequestLoggingMiddleware)
 
 @app.on_event("startup")
 async def startup():
@@ -54,6 +59,7 @@ app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(tracking_router, prefix="/progress", tags=["Tracking"])
 app.include_router(nutrition_router, prefix="/nutrition", tags=["Nutrition"])
 app.include_router(profile_router, prefix="/profile", tags=["Profile"])
+app.include_router(logs_router, prefix="/logs", tags=["Logs"])
 
 @app.get("/")
 async def root():

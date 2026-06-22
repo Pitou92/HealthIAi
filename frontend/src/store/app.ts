@@ -41,6 +41,10 @@ interface AppStore {
   userProfile: any | null;
   favoriteMeals: SavedMeal[];
   userId: number | null;
+  weightUnit: 'kg' | 'lbs';
+  heightUnit: 'cm' | 'in';
+  setWeightUnit: (unit: 'kg' | 'lbs') => void;
+  setHeightUnit: (unit: 'cm' | 'in') => void;
   // Actions
   submitAndFetch: (profile: UserProfile) => Promise<void>;
   loadRecommendations: () => Promise<void>;
@@ -70,6 +74,11 @@ export const useAppStore = create<AppStore>()(
       userProfile: null,
       favoriteMeals: [],
       userId: null,
+      weightUnit: 'kg',
+      heightUnit: 'cm',
+
+      setWeightUnit: (weightUnit) => set({ weightUnit }),
+      setHeightUnit: (heightUnit) => set({ heightUnit }),
 
       submitAndFetch: async (profile: UserProfile) => {
         set({ loading: true, error: null, success: false });
@@ -130,7 +139,8 @@ export const useAppStore = create<AppStore>()(
           const nutritionHistory = await fetchNutritionHistory(userId);
           const weightHistory = await fetchWeightHistory(userId);
           const favoriteMeals = await getFavoriteMeals(userId);
-          set({ nutritionHistory, weightHistory, favoriteMeals });
+          const userProfile = await fetchProfile(userId).catch(() => null);
+          set({ nutritionHistory, weightHistory, favoriteMeals, userProfile });
         } catch (e) {
           console.error('Failed to fetch history:', e);
         }
@@ -148,13 +158,70 @@ export const useAppStore = create<AppStore>()(
       },
 
       updateWeight: async (weight: number) => {
-        const { userId, dailyProgress } = get();
-        if (!userId || !dailyProgress) return;
-        set({ dailyProgress: { ...dailyProgress, current_weight_kg: weight } });
+        const { userId, dailyProgress, userProfile } = get();
+        if (!userId) return;
+        set({ loading: true });
+        if (dailyProgress) {
+          set({ dailyProgress: { ...dailyProgress, current_weight_kg: weight } });
+        }
         try {
           await logWeight(userId, weight);
+          const getFrontendProfile = (profile: any): UserProfile => {
+            if (!profile) {
+              return {
+                age: 25,
+                height: 175,
+                weight: weight,
+                sex: 'male',
+                goal: 'fitness',
+                activityFrequency: 3,
+                activityType: 'mixed',
+                activityLevel: 'moderate'
+              };
+            }
+            let goal: 'fitness' | 'weight_loss' | 'muscle_gain' = 'fitness';
+            const g = String(profile.goal || '').toLowerCase();
+            if (g.includes('loss') || g.includes('perte') || g === 'weight_loss') {
+              goal = 'weight_loss';
+            } else if (g.includes('gain') || g.includes('prise') || g === 'muscle_gain') {
+              goal = 'muscle_gain';
+            }
+
+            let sex: 'male' | 'female' | 'other' = 'other';
+            const s = String(profile.sex || '').toLowerCase();
+            if (s === 'male' || s === 'homme') sex = 'male';
+            else if (s === 'female' || s === 'femme') sex = 'female';
+
+            let activityLevel: 'sedentary' | 'light' | 'moderate' | 'intense' = 'moderate';
+            const fl = String(profile.fitness_level || '').toLowerCase();
+            if (fl === 'beginner' || fl === 'débutant') activityLevel = 'sedentary';
+            else if (fl === 'intermediate' || fl === 'intermédiaire') activityLevel = 'light';
+            else if (fl === 'advanced' || fl === 'avancé') activityLevel = 'moderate';
+            else if (fl === 'expert') activityLevel = 'intense';
+
+            return {
+              age: profile.age ?? 25,
+              height: profile.height_cm ?? 175,
+              weight: profile.weight_kg ?? 70,
+              sex,
+              goal,
+              activityFrequency: profile.workouts_per_week ?? 3,
+              activityType: 'mixed',
+              activityLevel
+            };
+          };
+          const feProfile = getFrontendProfile(userProfile);
+          feProfile.weight = weight;
+          await updateProfile(userId, feProfile);
+          const newRecs = await adjustPlan(userId, feProfile);
+          const updatedProfile = await fetchProfile(userId);
+          set({ recommendations: newRecs, userProfile: updatedProfile });
+          const weightHistory = await fetchWeightHistory(userId);
+          set({ weightHistory });
         } catch (e) {
-          set({ dailyProgress });
+          console.error('Failed to update weight in DB/profile:', e);
+        } finally {
+          set({ loading: false });
         }
       },
 
@@ -200,7 +267,8 @@ export const useAppStore = create<AppStore>()(
         try {
           await updateProfile(userId, profile);
           const data = await adjustPlan(userId, profile);
-          set({ recommendations: data, userProfile: profile });
+          const updatedProfile = await fetchProfile(userId);
+          set({ recommendations: data, userProfile: updatedProfile });
         } catch (e) {
           set({ error: e instanceof Error ? e.message : "Erreur lors de la mise à jour" });
         } finally {
@@ -209,7 +277,7 @@ export const useAppStore = create<AppStore>()(
       },
 
       clearError: () => set({ error: null }),
-      reset: () => set({ loading: false, error: null, success: false, recommendations: null, dailyProgress: null, nutritionLogs: [], streak: null, nutritionHistory: [], weightHistory: [], userProfile: null, favoriteMeals: [], userId: null }),
+      reset: () => set({ loading: false, error: null, success: false, recommendations: null, dailyProgress: null, nutritionLogs: [], streak: null, nutritionHistory: [], weightHistory: [], userProfile: null, favoriteMeals: [], userId: null, weightUnit: 'kg', heightUnit: 'cm' }),
     }),
     {
       name: 'healthai-app-storage',
@@ -220,7 +288,9 @@ export const useAppStore = create<AppStore>()(
         dailyProgress: state.dailyProgress,
         nutritionLogs: state.nutritionLogs,
         streak: state.streak,
-        userProfile: state.userProfile
+        userProfile: state.userProfile,
+        weightUnit: state.weightUnit,
+        heightUnit: state.heightUnit
       }),
     }
   )

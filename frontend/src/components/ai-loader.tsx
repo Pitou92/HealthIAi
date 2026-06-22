@@ -20,28 +20,31 @@ export function AILoader({ visible }: AILoaderProps) {
   const [mounted, setMounted] = useState(visible);
   const [msgIdx, setMsgIdx] = useState(0);
 
-  const containerFade = useRef(new Animated.Value(visible ? 1 : 0)).current;
-  const msgFade = useRef(new Animated.Value(1)).current;
-  const dot1 = useRef(new Animated.Value(0.3)).current;
-  const dot2 = useRef(new Animated.Value(0.3)).current;
-  const dot3 = useRef(new Animated.Value(0.3)).current;
-  const blobScale1 = useRef(new Animated.Value(1)).current;
-  const blobScale2 = useRef(new Animated.Value(1)).current;
-  const blobScale3 = useRef(new Animated.Value(1)).current;
-  const blobOp1 = useRef(new Animated.Value(0.7)).current;
-  const blobOp2 = useRef(new Animated.Value(0.5)).current;
-  const blobOp3 = useRef(new Animated.Value(0.4)).current;
+  const [containerFade] = useState(() => new Animated.Value(visible ? 1 : 0));
+  const [msgFade] = useState(() => new Animated.Value(1));
+  const [dot1] = useState(() => new Animated.Value(0.3));
+  const [dot2] = useState(() => new Animated.Value(0.3));
+  const [dot3] = useState(() => new Animated.Value(0.3));
+  const [blobScale1] = useState(() => new Animated.Value(1));
+  const [blobScale2] = useState(() => new Animated.Value(1));
+  const [blobScale3] = useState(() => new Animated.Value(1));
+  const [blobOp1] = useState(() => new Animated.Value(0.7));
+  const [blobOp2] = useState(() => new Animated.Value(0.5));
+  const [blobOp3] = useState(() => new Animated.Value(0.4));
 
   useEffect(() => {
     if (visible) {
-      setMounted(true);
+      const timer = setTimeout(() => {
+        setMounted(true);
+      }, 0);
       Animated.timing(containerFade, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+      return () => clearTimeout(timer);
     } else {
       Animated.timing(containerFade, { toValue: 0, duration: 500, useNativeDriver: true }).start(
         ({ finished }) => { if (finished) setMounted(false); },
       );
     }
-  }, [visible]);
+  }, [visible, containerFade]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -53,7 +56,7 @@ export function AILoader({ visible }: AILoaderProps) {
     };
     const id = setInterval(rotate, 2500);
     return () => clearInterval(id);
-  }, [mounted]);
+  }, [mounted, msgFade]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -88,7 +91,7 @@ export function AILoader({ visible }: AILoaderProps) {
     addBlob(blobScale3, blobOp3, 1.25, 4500);
 
     return () => { timers.forEach(clearTimeout); loops.forEach((l) => l.stop()); };
-  }, [mounted]);
+  }, [mounted, dot1, dot2, dot3, blobScale1, blobScale2, blobScale3, blobOp1, blobOp2, blobOp3]);
 
   if (!mounted) return null;
 

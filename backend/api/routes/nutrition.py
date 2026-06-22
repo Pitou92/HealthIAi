@@ -82,6 +82,7 @@ async def search_foods(q: str = Query(..., min_length=2)):
 @router.post("/favorites", response_model=SavedMeal)
 async def save_favorite_meal(meal: SavedMeal):
     """Save a meal to favorites."""
+    logger.info(f"Saving favorite meal for user {meal.user_id}: {meal.name}")
     if not meal.created_at:
         meal.created_at = datetime.now().isoformat()
     await db_nosql.saved_meals.insert_one(meal.model_dump())
@@ -90,6 +91,7 @@ async def save_favorite_meal(meal: SavedMeal):
 @router.get("/favorites", response_model=List[SavedMeal])
 async def get_favorite_meals(user_id: int = Query(...)):
     """Get all favorite meals for a user."""
+    logger.info(f"Fetching favorite meals for user_id: {user_id}")
     cursor = db_nosql.saved_meals.find({"user_id": user_id}).sort("created_at", -1)
     meals = []
     async for doc in cursor:

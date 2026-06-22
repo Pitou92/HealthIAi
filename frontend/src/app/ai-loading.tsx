@@ -46,7 +46,11 @@ export default function AILoadingScreen() {
 
   const handleBack = () => {
     clearError();
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace(Routes.Dashboard);
+    }
   };
 
   return (

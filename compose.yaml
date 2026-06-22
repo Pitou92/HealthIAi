@@ -9,14 +9,21 @@ services:
       - DATABASE_URL=mysql+aiomysql://root:root@db:3306/Healthai
       - MONGODB_URL=mongodb://mongodb:27017
       - MONGODB_DB_NAME=Healthai
+      - ENABLE_TRACING=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_SERVICE_NAME=healthiai-backend
     depends_on:
       - db
       - mongodb
+      - tempo
   
   frontend:
     build: ./frontend
     ports:
       - "5173:5173" 
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
 
@@ -40,7 +47,75 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-  
+
+  # Prometheus metrics collector
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+  # Loki log storage
+  loki:
+    image: grafana/loki:2.8.2
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+
+  # Promtail log forwarder (reads logs from host mount and pushes to Loki)
+  promtail:
+    image: grafana/promtail:2.8.2
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - ./backend/logs:/var/log/healthiai:ro
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
+  # Tempo traces collector
+  tempo:
+    image: grafana/tempo:2.1.1
+    container_name: tempo
+    restart: unless-stopped
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./monitoring/tempo/tempo.yml:/etc/tempo.yaml:ro
+    ports:
+      - "3200:3200"   # Tempo HTTP
+      - "4317:4317"   # OTLP gRPC receiver
+
+  # Grafana dashboard UI
+  grafana:
+    image: grafana/grafana:10.0.3
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
 volumes:
   db_data:
   mongodb_data:
+  grafana_data:

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import type { Recommendations } from '@/types/recommendations';
 import { mockRecommendations } from '@/mocks/recommendations';
 import { API_BASE_URL, MOCK_RECO_DELAY_MS, MOCK_SUBMIT_DELAY_MS, USE_MOCK } from '@/config/api';
@@ -452,7 +453,7 @@ export async function analyzeMeal(userId: number, imageUri: string): Promise<any
   const auth = await bearer();
   const formData = new FormData();
 
-  if (typeof window !== 'undefined') {
+  if (Platform.OS === 'web') {
     const response = await fetch(imageUri);
     const blob = await response.blob();
     formData.append('file', blob, 'meal.jpg');

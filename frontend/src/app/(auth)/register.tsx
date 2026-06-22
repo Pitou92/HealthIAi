@@ -7,6 +7,7 @@ import { Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { register } from '@/services/api';
 import { saveToken } from '@/services/token';
+import { AnimatedBackground } from '@/components/animated-background';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -33,7 +34,18 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.back} onPress={() => router.back()}>
+      <AnimatedBackground intensity="soft" />
+
+      <TouchableOpacity 
+        style={styles.back} 
+        onPress={() => {
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.replace(Routes.Welcome);
+          }
+        }}
+      >
         <Text style={styles.backText}>← Retour</Text>
       </TouchableOpacity>
 
