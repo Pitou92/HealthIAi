@@ -73,7 +73,7 @@ export default function AILoadingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SP.bg,
+    backgroundColor: '#F2F2F7',
   },
   errorContainer: {
     flex: 1,
@@ -83,15 +83,13 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   errorEmoji: { fontSize: 48, marginBottom: 10 },
-  errorTitle: { fontSize: 24, fontWeight: '800', color: '#fff', textAlign: 'center' },
-  errorText: { fontSize: 16, color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginBottom: 20 },
+  errorTitle: { fontSize: 24, fontWeight: '800', color: '#000', textAlign: 'center' },
+  errorText: { fontSize: 16, color: '#8E8E93', textAlign: 'center', marginBottom: 20 },
   backBtn: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: '#007AFF',
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.two,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
   },
   backBtnText: { color: '#fff', fontWeight: '700' },
 });

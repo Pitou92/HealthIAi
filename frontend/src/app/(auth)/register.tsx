@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedBackground } from '@/components/animated-background';
-import { SP, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { register } from '@/services/api';
 import { saveToken } from '@/services/token';
@@ -34,8 +33,6 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimatedBackground intensity="soft" />
-
       <TouchableOpacity style={styles.back} onPress={() => router.back()}>
         <Text style={styles.backText}>← Retour</Text>
       </TouchableOpacity>
@@ -48,7 +45,7 @@ export default function RegisterScreen() {
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor={SP.textMuted}
+            placeholderTextColor="#8E8E93"
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -57,7 +54,7 @@ export default function RegisterScreen() {
           <TextInput
             style={styles.input}
             placeholder="Mot de passe (min. 6 caractères)"
-            placeholderTextColor={SP.textMuted}
+            placeholderTextColor="#8E8E93"
             secureTextEntry
             value={password}
             onChangeText={(v) => { setPassword(v); setError(null); }}
@@ -84,56 +81,47 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: SP.bg, paddingHorizontal: Spacing.four },
+  container: { flex: 1, backgroundColor: '#F2F2F7', paddingHorizontal: 20 },
 
   back: { paddingVertical: Spacing.three },
-  backText: { fontSize: 16, color: SP.primary, fontWeight: '600' },
+  backText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
 
   content: { flex: 1, justifyContent: 'center', gap: Spacing.three },
-  eyebrow: { fontSize: 14, color: SP.textDim },
-  title: { fontSize: 34, fontWeight: '800', color: SP.text, letterSpacing: -0.5, marginTop: -Spacing.two },
+  eyebrow: { fontSize: 14, color: '#8E8E93' },
+  title: { fontSize: 34, fontWeight: '800', color: '#000', letterSpacing: -0.5, marginTop: -Spacing.two },
 
   card: {
-    backgroundColor: SP.bgCard,
-    borderRadius: 24,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
     padding: Spacing.four,
     gap: Spacing.two,
-    shadowColor: SP.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: SP.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
 
   input: {
-    backgroundColor: SP.bgInput,
-    borderRadius: 12,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 10,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
+    paddingVertical: 14,
     fontSize: 16,
-    color: SP.text,
-    borderWidth: 1,
-    borderColor: SP.borderDim,
+    color: '#000',
   },
 
-  error: { fontSize: 13, color: '#F87171', textAlign: 'center' },
+  error: { fontSize: 13, color: '#FF3B30', textAlign: 'center' },
 
   primaryBtn: {
-    backgroundColor: SP.primary,
+    backgroundColor: '#007AFF',
     borderRadius: 12,
     paddingVertical: Spacing.three,
     alignItems: 'center',
     marginTop: Spacing.one,
-    shadowColor: SP.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 5,
   },
   btnDisabled: { opacity: 0.55 },
   primaryBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
 
-  linkText: { fontSize: 14, color: SP.primary, textAlign: 'center', marginTop: Spacing.one },
+  linkText: { fontSize: 14, color: '#007AFF', textAlign: 'center', marginTop: Spacing.one },
 });

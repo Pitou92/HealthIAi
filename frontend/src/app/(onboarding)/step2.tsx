@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedBackground } from '@/components/animated-background';
-import { SP, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { useOnboardingStore } from '@/store/onboarding';
 import type { Goal } from '@/types/user';
@@ -28,8 +27,6 @@ export default function OnboardingStep2() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimatedBackground intensity="soft" />
-
       <View style={styles.progress}>
         <View style={[styles.dot, styles.dotDone]} />
         <View style={[styles.dot, styles.dotActive]} />
@@ -74,70 +71,59 @@ export default function OnboardingStep2() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SP.bg,
-    paddingHorizontal: Spacing.four,
+    backgroundColor: '#F2F2F7',
+    paddingHorizontal: 20,
     paddingVertical: Spacing.three,
   },
 
-  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
+  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.four },
   dot: { height: 5, flex: 1, borderRadius: 3 },
-  dotActive: { backgroundColor: SP.primary },
-  dotDone: { backgroundColor: 'rgba(34, 197, 94, 0.5)' },
-  dotInactive: { backgroundColor: 'rgba(34, 197, 94, 0.2)' },
+  dotActive: { backgroundColor: '#007AFF' },
+  dotDone: { backgroundColor: '#34C759' },
+  dotInactive: { backgroundColor: '#E5E5EA' },
 
   content: { flex: 1, gap: Spacing.three },
-  eyebrow: { fontSize: 12, fontWeight: '700', color: SP.primary, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 32, fontWeight: '800', color: SP.text, letterSpacing: -0.5 },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 34, fontWeight: '800', color: '#000', letterSpacing: -0.5 },
 
   options: { gap: Spacing.two, marginTop: Spacing.one },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    backgroundColor: SP.bgCard,
-    borderRadius: 18,
+    backgroundColor: '#FFF',
+    borderRadius: 14,
     padding: Spacing.three,
-    borderWidth: 1.5,
-    borderColor: SP.borderDim,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
     elevation: 2,
   },
-  cardActive: {
-    borderColor: SP.primary,
-    backgroundColor: 'rgba(34, 197, 94, 0.08)',
-    shadowColor: SP.primary,
-    shadowOpacity: 0.2,
-  },
+  cardActive: { backgroundColor: 'rgba(0,122,255,0.06)' },
   cardEmoji: { fontSize: 28 },
   cardText: { flex: 1 },
-  cardLabel: { fontSize: 16, fontWeight: '700', color: SP.text },
-  cardLabelActive: { color: SP.primary },
-  cardDesc: { fontSize: 13, color: SP.textMuted, marginTop: 2 },
+  cardLabel: { fontSize: 16, fontWeight: '700', color: '#000' },
+  cardLabelActive: { color: '#007AFF' },
+  cardDesc: { fontSize: 13, color: '#8E8E93', marginTop: 2 },
   radio: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: SP.borderDim,
+    borderColor: '#C7C7CC',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioActive: { borderColor: SP.primary },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: SP.primary },
+  radioActive: { borderColor: '#007AFF' },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#007AFF' },
 
   nextBtn: {
-    backgroundColor: SP.primary,
-    borderRadius: 16,
+    backgroundColor: '#007AFF',
+    borderRadius: 14,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    shadowColor: SP.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
+    marginTop: Spacing.two,
   },
   nextBtnDisabled: { opacity: 0.38 },
   nextBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },

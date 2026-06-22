@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
-import { SP } from '@/constants/theme';
 
 const MESSAGES = [
   "Analyse de votre profil unique...",
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: SP.secondary,
+    backgroundColor: '#F2F2F7',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 50,
@@ -139,21 +138,21 @@ const styles = StyleSheet.create({
     width: 400, height: 400,
     borderRadius: 200,
     top: -100, right: -100,
-    backgroundColor: 'rgba(34, 197, 94, 0.25)', // SP.primary with opacity
+    backgroundColor: 'rgba(0,122,255,0.06)',
   },
   blob2: {
     position: 'absolute',
     width: 350, height: 350,
     borderRadius: 175,
     bottom: -80, left: -80,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(52,199,89,0.05)',
   },
   blob3: {
     position: 'absolute',
     width: 280, height: 280,
     borderRadius: 140,
     top: '40%', left: -50,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)', // SP.secondary with opacity
+    backgroundColor: 'rgba(0,122,255,0.04)',
   },
 
   inner: { alignItems: 'center', gap: 20 },
@@ -161,31 +160,29 @@ const styles = StyleSheet.create({
   logoWrap: {
     width: 88, height: 88,
     borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: '#007AFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
     elevation: 10,
   },
-  logoChar: { fontSize: 44, fontWeight: '900', color: '#fff', textShadowColor: 'rgba(255,255,255,0.5)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 },
+  logoChar: { fontSize: 44, fontWeight: '900', color: '#fff' },
 
   brand: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 4 },
-  brandWhite: { fontSize: 48, fontWeight: '900', color: '#fff', letterSpacing: -1.5 },
-  brandDim: { fontSize: 48, fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: -1.5 },
+  brandWhite: { fontSize: 48, fontWeight: '900', color: '#000', letterSpacing: -1.5 },
+  brandDim: { fontSize: 48, fontWeight: '900', color: '#8E8E93', letterSpacing: -1.5 },
 
   dotsRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#007AFF' },
 
   message: {
     fontSize: 16,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.9)',
+    color: '#8E8E93',
     textAlign: 'center',
     paddingHorizontal: 40,
     marginTop: 12,

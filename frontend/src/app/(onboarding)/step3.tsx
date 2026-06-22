@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedBackground } from '@/components/animated-background';
-import { SP, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { Routes } from '@/navigation/routes';
 import { useOnboardingStore } from '@/store/onboarding';
 import type { ActivityLevel, ActivityType } from '@/types/user';
@@ -35,17 +34,14 @@ export default function OnboardingStep3() {
 
   const canFinish = frequency !== null && activityType !== null && level !== null;
 
-  async function handleFinish() {
+  function handleFinish() {
     if (!canFinish) return;
-
     setStep3({ activityFrequency: frequency, activityType, activityLevel: level });
-    router.push('/ai-loading' as any);
+    router.push(Routes.AILoading);
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimatedBackground intensity="soft" />
-
       <View style={styles.progress}>
         <View style={[styles.dot, styles.dotDone]} />
         <View style={[styles.dot, styles.dotDone]} />
@@ -65,7 +61,7 @@ export default function OnboardingStep3() {
                 style={[styles.chip, frequency === f && styles.chipActive]}
                 onPress={() => setFrequency(f)}>
                 <Text style={[styles.chipText, frequency === f && styles.chipTextActive]}>
-                  {f}×
+                  {f}x
                 </Text>
               </TouchableOpacity>
             ))}
@@ -118,62 +114,58 @@ export default function OnboardingStep3() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SP.bg,
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three,
+    backgroundColor: '#F2F2F7',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
-
-  progress: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.three },
+  progress: { flexDirection: 'row', gap: 4, marginBottom: 24 },
   dot: { height: 5, flex: 1, borderRadius: 3 },
-  dotActive: { backgroundColor: SP.primary },
-  dotDone: { backgroundColor: 'rgba(34, 197, 94, 0.5)' },
-
-  content: { flex: 1, gap: Spacing.three },
-  eyebrow: { fontSize: 12, fontWeight: '700', color: SP.primary, textTransform: 'uppercase', letterSpacing: 0.5 },
-  title: { fontSize: 32, fontWeight: '800', color: SP.text, letterSpacing: -0.5 },
-
-  section: { gap: Spacing.two },
-  label: { fontSize: 13, fontWeight: '600', color: SP.textDim },
-
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
+  dotActive: { backgroundColor: '#007AFF' },
+  dotDone: { backgroundColor: '#34C759' },
+  content: { flex: 1, gap: 24 },
+  eyebrow: { fontSize: 12, fontWeight: '700', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 34, fontWeight: '800', color: '#000', letterSpacing: -0.5 },
+  section: { gap: 8 },
+  label: { fontSize: 13, fontWeight: '600', color: '#8E8E93', textTransform: 'uppercase', letterSpacing: 0.3 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   chip: {
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: SP.bgCard,
-    borderWidth: 1.5,
-    borderColor: SP.borderDim,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 1,
+    elevation: 1,
   },
-  chipActive: { backgroundColor: 'rgba(34, 197, 94, 0.12)', borderColor: SP.primary },
-  chipText: { fontSize: 14, fontWeight: '600', color: SP.textDim },
-  chipTextActive: { color: SP.primary },
-
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
+  chipActive: { backgroundColor: 'rgba(0,122,255,0.1)' },
+  chipText: { fontSize: 14, fontWeight: '600', color: '#8E8E93' },
+  chipTextActive: { color: '#007AFF' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   gridItem: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: SP.bgCard,
-    borderWidth: 1.5,
-    borderColor: SP.borderDim,
+    backgroundColor: '#FFF',
     minWidth: '45%',
     flex: 1,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 1,
+    elevation: 1,
   },
-  gridItemActive: { backgroundColor: 'rgba(34, 197, 94, 0.12)', borderColor: SP.primary },
-  gridText: { fontSize: 14, fontWeight: '600', color: SP.textDim },
-  gridTextActive: { color: SP.primary },
-
+  gridItemActive: { backgroundColor: 'rgba(0,122,255,0.1)' },
+  gridText: { fontSize: 14, fontWeight: '600', color: '#8E8E93' },
+  gridTextActive: { color: '#007AFF' },
   nextBtn: {
-    backgroundColor: SP.primary,
-    borderRadius: 16,
-    paddingVertical: Spacing.three,
+    backgroundColor: '#007AFF',
+    borderRadius: 14,
+    paddingVertical: 16,
     alignItems: 'center',
-    shadowColor: SP.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
+    marginTop: 8,
   },
   nextBtnDisabled: { opacity: 0.38 },
   nextBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
