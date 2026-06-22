@@ -13,7 +13,7 @@ class Settings:
     VERSION: str = "1.0.0"
 
     OPENROUTER_KEY: str = os.getenv("OPENROUTER_KEY", "")
-    AI_MODEL: str = "openai/gpt-oss-120b:free"
+    AI_MODEL: str = os.getenv("AI_MODEL", "openai/gpt-4o-mini")
     
     # SQL Database (MySQL) - MUST use aiomysql for async
     DATABASE_URL: str = os.getenv("DATABASE_URL", "mysql+aiomysql://root:password@localhost/healthiai")
