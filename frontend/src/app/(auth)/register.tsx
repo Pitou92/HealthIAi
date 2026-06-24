@@ -1,13 +1,15 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { Spacing } from '@/constants/theme';
+import { AnimatedBackground } from '@/components/animated-background';
 import { Routes } from '@/navigation/routes';
 import { register } from '@/services/api';
 import { saveToken } from '@/services/token';
-import { AnimatedBackground } from '@/components/animated-background';
+import { Text } from '@/components/ui/text';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -33,11 +35,11 @@ export default function RegisterScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-background px-6">
       <AnimatedBackground intensity="soft" />
 
       <TouchableOpacity 
-        style={styles.back} 
+        className="py-6" 
         onPress={() => {
           if (router.canGoBack()) {
             router.back();
@@ -46,94 +48,43 @@ export default function RegisterScreen() {
           }
         }}
       >
-        <Text style={styles.backText}>← Retour</Text>
+        <Text className="text-primary font-semibold text-base">← Retour</Text>
       </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.eyebrow}>Bienvenue !</Text>
-        <Text style={styles.title}>Créer un compte</Text>
-
-        <View style={styles.card}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#8E8E93"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={(v) => { setEmail(v); setError(null); }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Mot de passe (min. 6 caractères)"
-            placeholderTextColor="#8E8E93"
-            secureTextEntry
-            value={password}
-            onChangeText={(v) => { setPassword(v); setError(null); }}
-          />
-
-          {error && <Text style={styles.error}>{error}</Text>}
-
-          <TouchableOpacity
-            style={[styles.primaryBtn, loading && styles.btnDisabled]}
-            onPress={handleRegister}
-            disabled={loading}>
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.primaryBtnText}>Créer mon compte</Text>}
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push(Routes.Login)}>
-            <Text style={styles.linkText}>Déjà un compte ? Se connecter</Text>
-          </TouchableOpacity>
+      <View className="flex-1 justify-center gap-8 -mt-20">
+        <View className="gap-2">
+          <Text variant="muted">Bienvenue !</Text>
+          <Text variant="h1">Créer un compte</Text>
         </View>
+
+        <Card className="gap-4">
+          <Input 
+            placeholder="Email" 
+            keyboardType="email-address" 
+            autoCapitalize="none" 
+            value={email} 
+            onChangeText={(v) => { setEmail(v); setError(null); }} 
+          />
+          <Input 
+            placeholder="Mot de passe (min. 6 caractères)" 
+            secureTextEntry 
+            value={password} 
+            onChangeText={(v) => { setPassword(v); setError(null); }} 
+          />
+
+          {error && <Text className="text-destructive text-sm text-center">{error}</Text>}
+
+          <Button className="mt-2" disabled={loading} onPress={handleRegister}>
+            {loading ? <ActivityIndicator color="#FFF" /> : <Text className="text-primary-foreground font-semibold text-base">Créer mon compte</Text>}
+          </Button>
+
+          <Button 
+            variant="link" 
+            label="Déjà un compte ? Se connecter" 
+            onPress={() => router.push(Routes.Login)} 
+          />
+        </Card>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F7', paddingHorizontal: 20 },
-
-  back: { paddingVertical: Spacing.three },
-  backText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
-
-  content: { flex: 1, justifyContent: 'center', gap: Spacing.three },
-  eyebrow: { fontSize: 14, color: '#8E8E93' },
-  title: { fontSize: 34, fontWeight: '800', color: '#000', letterSpacing: -0.5, marginTop: -Spacing.two },
-
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: Spacing.four,
-    gap: Spacing.two,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-
-  input: {
-    backgroundColor: '#F2F2F7',
-    borderRadius: 10,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#000',
-  },
-
-  error: { fontSize: 13, color: '#FF3B30', textAlign: 'center' },
-
-  primaryBtn: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginTop: Spacing.one,
-  },
-  btnDisabled: { opacity: 0.55 },
-  primaryBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
-
-  linkText: { fontSize: 14, color: '#007AFF', textAlign: 'center', marginTop: Spacing.one },
-});

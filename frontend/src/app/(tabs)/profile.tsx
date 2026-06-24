@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator, Modal, Alert } from 'react-native';
+import { ScrollView, TouchableOpacity, View, TextInput, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/store/app';
@@ -7,6 +7,13 @@ import { removeToken } from '@/services/token';
 import { Routes } from '@/navigation/routes';
 import type { UserProfile, Goal, Sex, ActivityLevel } from '@/types/user';
 import { AILoader } from '@/components/ai-loader';
+import { Text } from '@/components/ui/text';
+import { Card } from '@/components/ui/card';
+import { SymbolView } from 'expo-symbols';
+import { Colors } from '@/constants/theme';
+import { useAppColorScheme } from '@/hooks/use-app-color-scheme';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Button } from '@/components/ui/button';
 
 // Mapper to normalize backend profile structure to frontend UserProfile
 function getFrontendProfile(profile: any): UserProfile {
@@ -59,7 +66,6 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { 
     userProfile, 
-    nutritionHistory, 
     weightHistory, 
     fetchHistoryAndProfile, 
     updateUserProfileAndAdjustPlan, 
@@ -71,6 +77,8 @@ export default function ProfileScreen() {
     setWeightUnit,
     setHeightUnit
   } = useAppStore();
+
+  const { isDark } = useAppColorScheme();
 
   // Modals visibility
   const [objectifsVisible, setObjectifsVisible] = useState(false);
@@ -191,72 +199,93 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <AILoader visible={loading} />
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Profil</Text>
-          
-          <View style={styles.card}>
-            <View style={styles.profileHeader}>
-              <TouchableOpacity style={styles.avatar} onPress={handleAvatarPress} activeOpacity={0.85}>
-                <Text style={styles.avatarText}>H</Text>
-              </TouchableOpacity>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.userName}>Utilisateur</Text>
-                {userProfile && (
-                  <Text style={styles.userEmail}>
+      <SafeAreaView className="flex-1" edges={['top']}>
+        <ScrollView contentContainerClassName="px-5 pb-10 gap-6" showsVerticalScrollIndicator={false}>
+          <Text variant="h1" className="mt-2">Profil</Text>
+
+          {/* Avatar card with dev clicks */}
+          <Card className="p-4 border-none bg-secondary/10 flex-row items-center gap-4">
+            <TouchableOpacity className="w-16 h-16 rounded-full bg-primary items-center justify-center" onPress={handleAvatarPress} activeOpacity={0.85}>
+              <Text className="text-2xl font-bold text-primary-foreground">H</Text>
+            </TouchableOpacity>
+            <View>
+              <Text variant="h3">Mon Compte</Text>
+              {userProfile ? (
+                <Text variant="muted">
                   {getGoalLabel(userProfile.goal)} • {getFitnessLabel(userProfile.fitness_level)}
-                  </Text>
-                )}
-              </View>
+                </Text>
+              ) : (
+                <Text variant="muted">Chargement...</Text>
+              )}
             </View>
+          </Card>
+
+          {/* Theme card */}
+          <View className="gap-3">
+            <Text variant="large">Apparence</Text>
+            <Card className="p-4 border-none flex-row justify-between items-center">
+              <View className="flex-row items-center gap-3">
+                <SymbolView 
+                  name={{ ios: 'paintpalette.fill', android: 'palette', web: 'palette' } as any} 
+                  size={20} 
+                  tintColor={isDark ? Colors.dark.foreground : Colors.light.foreground} 
+                />
+                <Text className="font-medium text-base">Thème de l'application</Text>
+              </View>
+              <ThemeToggle />
+            </Card>
           </View>
 
           {/* Historique Poids */}
-          <View style={styles.section}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.sectionTitle}>Historique de Poids</Text>
+          <View className="gap-3">
+            <View className="flex-row justify-between items-center px-1">
+              <Text variant="large">Historique de Poids</Text>
               <TouchableOpacity onPress={openWeight}>
-                <Text style={{ color: '#007AFF', fontSize: 16, fontWeight: '600', marginRight: 4 }}>Modifier</Text>
+                <Text className="text-primary font-semibold text-base">Modifier</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.card} onPress={openWeight} activeOpacity={0.7}>
-              {weightHistory && weightHistory.length === 0 ? (
-                <Text style={styles.emptyText}>Aucune donnée.</Text>
-              ) : (
-                weightHistory?.slice(-5).map((entry, i) => (
-                  <View key={i} style={[styles.historyRow, i < weightHistory.length - 1 && styles.divider]}>
-                    <Text style={styles.historyDate}>{entry.date}</Text>
-                    <Text style={styles.historyValue}>
-                      {weightUnit === 'lbs' 
-                        ? `${Math.round(entry.weight_kg * 2.20462 * 10) / 10} lbs` 
-                        : `${entry.weight_kg} kg`}
-                    </Text>
-                  </View>
-                ))
-              )}
+            <TouchableOpacity onPress={openWeight} activeOpacity={0.7}>
+              <Card className="p-4 gap-2 border-none">
+                {weightHistory && weightHistory.length === 0 ? (
+                  <Text variant="muted" className="text-center py-4">Aucune donnée.</Text>
+                ) : (
+                  weightHistory?.slice(-5).map((entry, i) => (
+                    <View key={i} className={`flex-row justify-between items-center py-2 ${i < weightHistory.length - 1 ? 'border-b border-border' : ''}`}>
+                      <Text variant="muted" className="text-sm">{entry.date}</Text>
+                      <Text className="font-bold text-base">
+                        {weightUnit === 'lbs' 
+                          ? `${Math.round(entry.weight_kg * 2.20462 * 10) / 10} lbs` 
+                          : `${entry.weight_kg} kg`}
+                      </Text>
+                    </View>
+                  ))
+                )}
+              </Card>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Paramètres</Text>
-            <View style={styles.card}>
-              <MenuButton label="Objectifs" icon="🎯" onPress={openObjectifs} />
+          {/* Paramètres */}
+          <View className="gap-3">
+            <Text variant="large">Paramètres</Text>
+            <Card className="p-0 overflow-hidden border-none">
+              <MenuButton label="Objectifs" icon="🎯" divider={true} onPress={openObjectifs} />
               <MenuButton label="Unités" icon="📏" divider={isDevMode} onPress={() => setUnitsVisible(true)} />
               {isDevMode && (
                 <MenuButton label="Logs de l'application" icon="📋" divider={false} onPress={() => router.push(Routes.Logs as any)} />
               )}
-            </View>
+            </Card>
           </View>
 
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Se déconnecter</Text>
-          </TouchableOpacity>
+          <Button 
+            variant="destructive" 
+            label="Se déconnecter" 
+            onPress={handleLogout}
+            className="mt-4"
+          />
         </ScrollView>
       </SafeAreaView>
-
-
 
       {/* Modal Objectifs */}
       <Modal
@@ -265,73 +294,86 @@ export default function ProfileScreen() {
         visible={objectifsVisible}
         onRequestClose={() => setObjectifsVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Modifier les Objectifs</Text>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className={`rounded-t-[32px] p-6 pb-10 max-h-[90%] ${isDark ? 'bg-card border-t border-border' : 'bg-white'}`}>
+            <View className="flex-row justify-between items-center mb-6">
+              <Text variant="h2">Modifier les Objectifs</Text>
               <TouchableOpacity onPress={() => setObjectifsVisible(false)}>
-                <Text style={styles.closeBtnText}>Fermer</Text>
+                <Text className="text-primary font-semibold text-base">Fermer</Text>
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={{ gap: 20 }} showsVerticalScrollIndicator={false}>
-              <View style={styles.modalSection}>
-                <Text style={styles.modalLabel}>Objectif principal</Text>
-                <View style={styles.chipRow}>
-                  {(['weight_loss', 'muscle_gain', 'fitness'] as const).map((g) => (
-                    <TouchableOpacity
-                      key={g}
-                      style={[styles.chip, selectedGoal === g && styles.chipActive]}
-                      onPress={() => setSelectedGoal(g)}
-                    >
-                      <Text style={[styles.chipText, selectedGoal === g && styles.chipTextActive]}>
-                        {g === 'weight_loss' ? 'Perte de poids' : g === 'muscle_gain' ? 'Prise de muscle' : 'Remise en forme'}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+            <ScrollView contentContainerClassName="gap-6" showsVerticalScrollIndicator={false}>
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">Objectif principal</Text>
+                <View className="flex-row gap-2 flex-wrap">
+                  {(['weight_loss', 'muscle_gain', 'fitness'] as const).map((g) => {
+                    const active = selectedGoal === g;
+                    return (
+                      <TouchableOpacity
+                        key={g}
+                        activeOpacity={0.7}
+                        className={`rounded-xl px-4 py-2 border ${active ? 'bg-primary/10 border-primary' : 'bg-background border-border'}`}
+                        onPress={() => setSelectedGoal(g)}
+                      >
+                        <Text className={`font-semibold ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {g === 'weight_loss' ? 'Perte de poids' : g === 'muscle_gain' ? 'Prise de muscle' : 'Remise en forme'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
-              <View style={styles.modalSection}>
-                <Text style={styles.modalLabel}>Entraînements par semaine</Text>
-                <View style={styles.chipRow}>
-                  {[1, 2, 3, 4, 5, 6, 7].map((num) => (
-                    <TouchableOpacity
-                      key={num}
-                      style={[styles.chip, workoutsFreq === num && styles.chipActive, { minWidth: 40, alignItems: 'center' }]}
-                      onPress={() => setWorkoutsFreq(num)}
-                    >
-                      <Text style={[styles.chipText, workoutsFreq === num && styles.chipTextActive]}>
-                        {num}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">Entraînements par semaine</Text>
+                <View className="flex-row gap-2 flex-wrap">
+                  {[1, 2, 3, 4, 5, 6, 7].map((num) => {
+                    const active = workoutsFreq === num;
+                    return (
+                      <TouchableOpacity
+                        key={num}
+                        activeOpacity={0.7}
+                        className={`rounded-xl w-10 h-10 items-center justify-center border ${active ? 'bg-primary/10 border-primary' : 'bg-background border-border'}`}
+                        onPress={() => setWorkoutsFreq(num)}
+                      >
+                        <Text className={`font-semibold ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {num}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
-              <View style={styles.modalSection}>
-                <Text style={styles.modalLabel}>Âge (ans)</Text>
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">Âge (ans)</Text>
                 <TextInput
-                  style={styles.modalInput}
+                  className={`rounded-xl px-4 py-3 border text-foreground ${isDark ? 'bg-background border-border' : 'bg-gray-100 border-transparent'}`}
                   value={String(userAge || '')}
                   onChangeText={(val) => setUserAge(parseInt(val) || 0)}
                   keyboardType="numeric"
+                  placeholderTextColor={isDark ? '#4B5563' : '#9CA3AF'}
                 />
               </View>
 
-              <View style={styles.modalSection}>
-                <Text style={styles.modalLabel}>Taille ({heightUnit})</Text>
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">Taille ({heightUnit})</Text>
                 <TextInput
-                  style={styles.modalInput}
+                  className={`rounded-xl px-4 py-3 border text-foreground ${isDark ? 'bg-background border-border' : 'bg-gray-100 border-transparent'}`}
                   value={String(userHeight || '')}
                   onChangeText={(val) => setUserHeight(parseFloat(val) || 0)}
                   keyboardType="numeric"
+                  placeholderTextColor={isDark ? '#4B5563' : '#9CA3AF'}
                 />
               </View>
 
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSaveObjectifs} disabled={loading}>
-                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveBtnText}>Enregistrer & Réajuster Plan</Text>}
-              </TouchableOpacity>
+              <Button 
+                label="Enregistrer & Réajuster Plan" 
+                size="lg"
+                onPress={handleSaveObjectifs} 
+                disabled={loading} 
+              />
             </ScrollView>
           </View>
         </View>
@@ -344,54 +386,58 @@ export default function ProfileScreen() {
         visible={unitsVisible}
         onRequestClose={() => setUnitsVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Unités de Mesure</Text>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className={`rounded-t-[32px] p-6 pb-10 max-h-[90%] ${isDark ? 'bg-card border-t border-border' : 'bg-white'}`}>
+            <View className="flex-row justify-between items-center mb-6">
+              <Text variant="h2">Unités de Mesure</Text>
               <TouchableOpacity onPress={() => setUnitsVisible(false)}>
-                <Text style={styles.closeBtnText}>Fermer</Text>
+                <Text className="text-primary font-semibold text-base">Fermer</Text>
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={{ gap: 24 }} showsVerticalScrollIndicator={false}>
-              <View style={styles.modalSection}>
-                <Text style={styles.modalLabel}>Unité de poids</Text>
-                <View style={styles.chipRow}>
+            <ScrollView contentContainerClassName="gap-6" showsVerticalScrollIndicator={false}>
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">Unité de poids</Text>
+                <View className="flex-row gap-2">
                   <TouchableOpacity
-                    style={[styles.chip, weightUnit === 'kg' && styles.chipActive]}
+                    activeOpacity={0.7}
+                    className={`flex-1 rounded-xl py-3 items-center border ${weightUnit === 'kg' ? 'bg-primary/10 border-primary' : 'bg-background border-border'}`}
                     onPress={() => setWeightUnit('kg')}
                   >
-                    <Text style={[styles.chipText, weightUnit === 'kg' && styles.chipTextActive]}>
+                    <Text className={`font-semibold ${weightUnit === 'kg' ? 'text-primary' : 'text-muted-foreground'}`}>
                       Kilogrammes (kg)
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.chip, weightUnit === 'lbs' && styles.chipActive]}
+                    activeOpacity={0.7}
+                    className={`flex-1 rounded-xl py-3 items-center border ${weightUnit === 'lbs' ? 'bg-primary/10 border-primary' : 'bg-background border-border'}`}
                     onPress={() => setWeightUnit('lbs')}
                   >
-                    <Text style={[styles.chipText, weightUnit === 'lbs' && styles.chipTextActive]}>
+                    <Text className={`font-semibold ${weightUnit === 'lbs' ? 'text-primary' : 'text-muted-foreground'}`}>
                       Livres (lbs)
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
-              <View style={styles.modalSection}>
-                <Text style={styles.modalLabel}>Unité de taille</Text>
-                <View style={styles.chipRow}>
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">Unité de taille</Text>
+                <View className="flex-row gap-2">
                   <TouchableOpacity
-                    style={[styles.chip, heightUnit === 'cm' && styles.chipActive]}
+                    activeOpacity={0.7}
+                    className={`flex-1 rounded-xl py-3 items-center border ${heightUnit === 'cm' ? 'bg-primary/10 border-primary' : 'bg-background border-border'}`}
                     onPress={() => setHeightUnit('cm')}
                   >
-                    <Text style={[styles.chipText, heightUnit === 'cm' && styles.chipTextActive]}>
+                    <Text className={`font-semibold ${heightUnit === 'cm' ? 'text-primary' : 'text-muted-foreground'}`}>
                       Centimètres (cm)
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.chip, heightUnit === 'in' && styles.chipActive]}
+                    activeOpacity={0.7}
+                    className={`flex-1 rounded-xl py-3 items-center border ${heightUnit === 'in' ? 'bg-primary/10 border-primary' : 'bg-background border-border'}`}
                     onPress={() => setHeightUnit('in')}
                   >
-                    <Text style={[styles.chipText, heightUnit === 'in' && styles.chipTextActive]}>
+                    <Text className={`font-semibold ${heightUnit === 'in' ? 'text-primary' : 'text-muted-foreground'}`}>
                       Pouces (in)
                     </Text>
                   </TouchableOpacity>
@@ -409,30 +455,34 @@ export default function ProfileScreen() {
         visible={weightVisible}
         onRequestClose={() => setWeightVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Mettre à jour le poids</Text>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className={`rounded-t-[32px] p-6 pb-10 max-h-[90%] ${isDark ? 'bg-card border-t border-border' : 'bg-white'}`}>
+            <View className="flex-row justify-between items-center mb-6">
+              <Text variant="h2">Mettre à jour le poids</Text>
               <TouchableOpacity onPress={() => setWeightVisible(false)}>
-                <Text style={styles.closeBtnText}>Fermer</Text>
+                <Text className="text-primary font-semibold text-base">Fermer</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={{ gap: 20 }}>
-              <View style={styles.modalSection}>
-                <Text style={styles.modalLabel}>Poids actuel ({weightUnit})</Text>
+            <View className="gap-6">
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">Poids actuel ({weightUnit})</Text>
                 <TextInput
-                  style={styles.modalInput}
+                  className={`rounded-xl px-4 py-3 border text-foreground ${isDark ? 'bg-background border-border' : 'bg-gray-100 border-transparent'}`}
                   value={weightInput}
                   onChangeText={setWeightInput}
                   keyboardType="numeric"
                   placeholder={`Ex: ${weightUnit === 'lbs' ? '150' : '70'}`}
+                  placeholderTextColor={isDark ? '#4B5563' : '#9CA3AF'}
                 />
               </View>
 
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSaveWeight} disabled={loading}>
-                {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveBtnText}>Enregistrer</Text>}
-              </TouchableOpacity>
+              <Button 
+                label="Enregistrer" 
+                size="lg"
+                onPress={handleSaveWeight} 
+                disabled={loading} 
+              />
             </View>
           </View>
         </View>
@@ -443,130 +493,12 @@ export default function ProfileScreen() {
 
 function MenuButton({ label, icon, divider = true, onPress }: any) {
   return (
-    <TouchableOpacity style={[styles.menuBtn, divider && styles.divider]} onPress={onPress}>
-      <View style={styles.rowBetween}>
-        <View style={styles.menuLabelRow}>
-          <Text style={styles.menuIcon}>{icon}</Text>
-          <Text style={styles.menuLabel}>{label}</Text>
-        </View>
-        <Text style={styles.chevron}>›</Text>
+    <TouchableOpacity activeOpacity={0.7} className={`p-4 flex-row justify-between items-center ${divider ? 'border-b border-border' : ''}`} onPress={onPress}>
+      <View className="flex-row items-center gap-3">
+        <Text className="text-xl">{icon}</Text>
+        <Text className="font-medium text-base">{label}</Text>
       </View>
+      <Text variant="muted" className="text-xl">›</Text>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F2F2F7' },
-  safe: { flex: 1 },
-  scroll: { paddingHorizontal: 20, paddingBottom: 40, gap: 24 },
-  title: { fontSize: 34, fontWeight: '800', color: '#000', marginTop: 10 },
-  section: { gap: 10 },
-  sectionTitle: { fontSize: 20, fontWeight: '700', color: '#000', marginLeft: 4 },
-  card: { backgroundColor: '#FFF', borderRadius: 12, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
-  
-  profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#007AFF', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 24, fontWeight: '700', color: '#FFF' },
-  userName: { fontSize: 20, fontWeight: '700', color: '#000' },
-  userEmail: { fontSize: 15, color: '#8E8E93' },
-  editBtn: { backgroundColor: '#F2F2F7', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
-  editBtnText: { color: '#007AFF', fontSize: 14, fontWeight: '600' },
-
-  editForm: { marginTop: 16, gap: 12, borderTopWidth: 1, borderTopColor: '#E5E5EA', paddingTop: 16 },
-  label: { fontSize: 15, fontWeight: '500', color: '#000' },
-  input: { backgroundColor: '#F2F2F7', borderRadius: 8, paddingHorizontal: 12, height: 44, fontSize: 16 },
-  saveBtn: { backgroundColor: '#34C759', borderRadius: 8, height: 44, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
-
-  historyRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  historyDate: { width: 90, fontSize: 14, color: '#8E8E93' },
-  historyValue: { width: 90, fontSize: 15, fontWeight: '600', color: '#000', textAlign: 'right' },
-  barContainer: { flex: 1, height: 6, backgroundColor: '#F2F2F7', borderRadius: 3, overflow: 'hidden' },
-  barFill: { height: '100%', backgroundColor: '#FF9500' },
-  emptyText: { textAlign: 'center', color: '#8E8E93', fontSize: 15, paddingVertical: 10 },
-
-  menuBtn: { paddingVertical: 12 },
-  divider: { borderBottomWidth: 0.5, borderBottomColor: '#E5E5EA' },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  menuLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  menuIcon: { fontSize: 20 },
-  menuLabel: { fontSize: 17, fontWeight: '500', color: '#000' },
-  chevron: { fontSize: 20, color: '#C7C7CC' },
-  logoutBtn: { marginTop: 20, paddingVertical: 12, alignItems: 'center', backgroundColor: '#FFF', borderRadius: 12 },
-  logoutText: { color: '#FF3B30', fontSize: 17, fontWeight: '600' },
-
-  // Modals Styling
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    paddingBottom: 40,
-    maxHeight: '90%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#000',
-  },
-  closeBtnText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  modalSection: {
-    marginBottom: 20,
-    gap: 8,
-  },
-  modalLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 4,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#F2F2F7',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-  },
-  chipActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
-  },
-  chipText: {
-    fontSize: 14,
-    color: '#3A3A3C',
-    fontWeight: '500',
-  },
-  chipTextActive: {
-    color: '#FFF',
-    fontWeight: '600',
-  },
-  modalInput: {
-    backgroundColor: '#F2F2F7',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 44,
-    fontSize: 16,
-    marginTop: 4,
-  },
-});

@@ -1,18 +1,24 @@
 import { Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
+import { Colors } from '@/constants/theme';
+import { useAppColorScheme } from '@/hooks/use-app-color-scheme';
+
 export default function TabsLayout() {
+  const { colorScheme, isDark } = useAppColorScheme();
+  const themeColors = isDark ? Colors.dark : Colors.light;
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E5EA',
-          borderTopWidth: 0.5,
+          backgroundColor: themeColors.card,
+          borderTopColor: themeColors.border,
+          borderTopWidth: 1,
         },
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarActiveTintColor: themeColors.primary,
+        tabBarInactiveTintColor: themeColors.mutedForeground,
       }}>
       <Tabs.Screen
         name="index"

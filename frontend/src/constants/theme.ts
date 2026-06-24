@@ -1,67 +1,55 @@
 import '@/global.css';
-
 import { Platform } from 'react-native';
 
-// Sport palette: Green × Blue × Dark
+export const Colors = {
+  light: {
+    background: '#FFFFFF',
+    foreground: '#09090B',
+    card: '#FFFFFF',
+    muted: '#E4E4E7',
+    mutedForeground: '#71717A',
+    border: '#E4E4E7',
+    primary: '#22C55E',
+  },
+  dark: {
+    background: '#09090B',
+    foreground: '#FAFAFA',
+    card: '#18181B',
+    muted: '#27272A',
+    mutedForeground: '#A1A1AA',
+    border: '#27272A',
+    primary: '#22C55E',
+  },
+} as const;
+
+// Backward compatibility alias for ongoing migration
 export const SP = {
-  bg: '#111827',
-  bgCard: '#1F2937',
-  bgInput: '#374151',
-
-  text: '#F9FAFB',
-  textDim: '#D1D5DB',
-  textMuted: '#9CA3AF',
-
+  bg: '#09090B',
+  bgCard: '#18181B',
+  bgInput: '#27272A',
+  text: '#FAFAFA',
+  textDim: '#A1A1AA',
+  textMuted: '#A1A1AA',
   primary: '#22C55E',
   primaryDeep: '#16A34A',
   secondary: '#3B82F6',
   accent: 'rgba(34, 197, 94, 0.45)',
-
-  border: 'rgba(34, 197, 94, 0.25)',
+  border: '#27272A',
   borderDim: 'rgba(255, 255, 255, 0.08)',
-
-  blob1: 'rgba(34, 197, 94, 0.15)',
-  blob2: 'rgba(59, 130, 246, 0.12)',
-  blob3: 'rgba(34, 197, 94, 0.08)',
 } as const;
-
-export const Colors = {
-  light: {
-    text: SP.text,
-    background: SP.bg,
-    backgroundElement: SP.bgInput,
-    backgroundSelected: 'rgba(34, 197, 94, 0.15)',
-    textSecondary: SP.textDim,
-  },
-  dark: {
-    text: SP.text,
-    background: SP.bg,
-    backgroundElement: SP.bgInput,
-    backgroundSelected: 'rgba(34, 197, 94, 0.15)',
-    textSecondary: SP.textDim,
-  },
-} as const;
-
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({
   ios: {
-    sans: 'system-ui',
+    sans: 'Inter',
     serif: 'ui-serif',
     rounded: 'ui-rounded',
     mono: 'ui-monospace',
   },
   default: {
-    sans: 'normal',
+    sans: 'Inter',
     serif: 'serif',
     rounded: 'normal',
     mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
   },
 });
 

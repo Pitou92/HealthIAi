@@ -1,31 +1,28 @@
 import * as React from 'react';
 import { View } from 'react-native';
+import { cn } from '@/lib/utils';
 
-type ViewProps = React.ComponentPropsWithoutRef<typeof View> & {
-  className?: string;
-};
-
-const Card = React.forwardRef<React.ElementRef<typeof View>, ViewProps>(
+const Card = React.forwardRef<React.ElementRef<typeof View>, React.ComponentPropsWithoutRef<typeof View>>(
   ({ className, ...props }, ref) => (
     <View
       ref={ref}
-      className={`rounded-2xl border border-white/8 bg-bg-card p-6 ${className ?? ''}`}
+      className={cn("rounded-2xl border border-border bg-card shadow-sm", className)}
       {...props}
     />
   )
 );
 Card.displayName = 'Card';
 
-const CardHeader = React.forwardRef<React.ElementRef<typeof View>, ViewProps>(
+const CardHeader = React.forwardRef<React.ElementRef<typeof View>, React.ComponentPropsWithoutRef<typeof View>>(
   ({ className, ...props }, ref) => (
-    <View ref={ref} className={`mb-2 gap-1 ${className ?? ''}`} {...props} />
+    <View ref={ref} className={cn("p-6 pb-2 gap-1.5", className)} {...props} />
   )
 );
 CardHeader.displayName = 'CardHeader';
 
-const CardContent = React.forwardRef<React.ElementRef<typeof View>, ViewProps>(
+const CardContent = React.forwardRef<React.ElementRef<typeof View>, React.ComponentPropsWithoutRef<typeof View>>(
   ({ className, ...props }, ref) => (
-    <View ref={ref} className={`gap-3 ${className ?? ''}`} {...props} />
+    <View ref={ref} className={cn("p-6 pt-0 gap-3", className)} {...props} />
   )
 );
 CardContent.displayName = 'CardContent';
